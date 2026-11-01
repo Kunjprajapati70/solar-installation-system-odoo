@@ -5,27 +5,34 @@ const User = require('../../models/User');
 
 async function syncAdmin() {
   await mongoose.connect(process.env.MONGODB_URI);
-  const targetEmail = (process.env.SMTP_USER || 'adminpayroll360@gmail.com').toLowerCase().trim();
 
-  let u = await User.findOne({ email: targetEmail });
-  if (!u) {
-    u = new User({
-      userId: 'ADM-PAYROLL',
-      name: 'System Administrator',
-      email: targetEmail,
-      password: 'Admin@2026Payroll!',
-      role: 'admin',
-      department: 'Executive Administration',
-      phone: '+91 9876543210',
-      status: 'active',
-      isActive: true,
-      mustChangePassword: false
-    });
-    await u.save();
-    console.log(`✓ Created Admin user account for ${targetEmail}`);
-  } else {
-    console.log(`✓ User account for ${targetEmail} already exists (role: ${u.role})`);
+  const emails = [
+    { email: 'kunjoza04@gmail.com', name: 'Kunj Prajapati', userId: 'ADM-KUNJ' },
+    { email: 'adminpayroll360@gmail.com', name: 'System Administrator', userId: 'ADM-PAYROLL' }
+  ];
+
+  for (const item of emails) {
+    let u = await User.findOne({ email: item.email });
+    if (!u) {
+      u = new User({
+        userId: item.userId,
+        name: item.name,
+        email: item.email,
+        password: 'Admin@2026Solar!',
+        role: 'admin',
+        department: 'Executive Administration',
+        phone: '+91 9876543210',
+        status: 'active',
+        isActive: true,
+        mustChangePassword: false
+      });
+      await u.save();
+      console.log(`✓ Created Admin user account for ${item.email} (${item.userId})`);
+    } else {
+      console.log(`✓ User account for ${item.email} already exists (${u.userId || u.role})`);
+    }
   }
+
   await mongoose.disconnect();
 }
 

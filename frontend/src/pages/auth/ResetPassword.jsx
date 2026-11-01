@@ -9,7 +9,7 @@ export const ResetPassword = () => {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState(location.state?.email || '');
-  const [code, setCode] = useState(location.state?.devOtp || '');
+  const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -37,10 +37,7 @@ export const ResetPassword = () => {
       const res = await api.post('/auth/forgot-password', { email: email.trim().toLowerCase() });
       if (res.success) {
         setCooldown(45);
-        setInfoMsg('New OTP code dispatched via SMTP.');
-        if (res.data?.devOtp) {
-          setCode(res.data.devOtp);
-        }
+        setInfoMsg('A new 6-digit verification code has been sent to your email inbox. Please check your inbox.');
       } else {
         setError(res.message || 'Failed to resend code');
       }

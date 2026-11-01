@@ -368,17 +368,10 @@ class AuthController {
         smtpConfigured: smtpConfigured(),
         delivered: Boolean(mail && mail.delivered)
       };
-      if (!mail?.delivered || process.env.NODE_ENV !== 'production') {
-        payload.devOtp = otp;
-        payload.devHint = mail?.delivered
-          ? 'Email dispatched via SMTP. OTP also attached for development ease.'
-          : `SMTP delivery failed (${mail?.reason || 'smtp_error'}). Verification OTP provided in devOtp.`;
-        console.log(`[PASSWORD RESET OTP for ${user.email}]: ${otp}`);
-      }
 
       const message = mail?.delivered
-        ? `A 6-digit verification code has been dispatched to ${user.email}.`
-        : `Verification code generated for ${user.email}.`;
+        ? `A secret 6-digit verification code has been dispatched to ${user.email}. Please check your inbox.`
+        : `A 6-digit verification code has been generated. Please check your email inbox.`;
 
       return ApiResponse.success(res, payload, message);
     } catch (err) {
