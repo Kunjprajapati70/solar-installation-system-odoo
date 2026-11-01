@@ -6,6 +6,8 @@ import { SocketProvider } from './context/SocketContext';
 import { ToastProvider } from './context/ToastContext';
 import Layout from './components/layout/Layout';
 
+import LandingPage from './pages/LandingPage';
+
 // Auth Pages
 import Login from './pages/auth/Login';
 import ForgotPassword from './pages/auth/ForgotPassword';
@@ -33,8 +35,6 @@ import FinancialsView from './pages/FinancialsView';
 import SubsidiesView from './pages/SubsidiesView';
 import TechniciansManagementView from './pages/TechniciansManagementView';
 import ReportsView from './pages/ReportsView';
-import AdminReviewCenter from './pages/AdminReviewCenter';
-import UserManagementView from './pages/UserManagementView';
 
 import { Sun } from 'lucide-react';
 
@@ -68,7 +68,7 @@ const PublicAuthRoute = ({ children }) => {
   if (!loading && token && user) {
     if (user.role === 'technician') return <Navigate to="/technician-portal" replace />;
     if (user.role === 'customer') return <Navigate to="/customer-portal" replace />;
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   // Always render login page immediately
@@ -94,8 +94,12 @@ function App() {
           <ToastProvider>
             <BrowserRouter>
               <Routes>
+                {/* Public Landing Page */}
+                <Route path="/" element={<LandingPage />} />
+
                 {/* Standalone Auth Routes */}
                 <Route path="/login" element={<PublicAuthRoute><Login /></PublicAuthRoute>} />
+                <Route path="/register" element={<Navigate to="/login" replace />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
 
@@ -105,33 +109,30 @@ function App() {
 
                 {/* Application Layout with Protected Workspace */}
                 <Route
-                  path="/"
                   element={
                     <ProtectedRoute>
                       <Layout />
                     </ProtectedRoute>
                   }
                 >
-                  <Route index element={<RoleBasedHome />} />
-                  <Route path="profile" element={<Profile />} />
-                  <Route path="enquiries" element={<EnquiriesView />} />
-                  <Route path="customers" element={<CustomersView />} />
-                  <Route path="surveys" element={<SurveysView />} />
-                  <Route path="quotations" element={<QuotationsView />} />
-                  <Route path="orders" element={<OrdersView />} />
-                  <Route path="equipment-tracking" element={<SmartEquipmentView />} />
-                  <Route path="inventory" element={<InventoryView />} />
-                  <Route path="technician-portal" element={<TechnicianMobilePortal />} />
-                  <Route path="installations" element={<InstallationPipelineView />} />
-                  <Route path="warranties" element={<WarrantyManagementView />} />
-                  <Route path="service-tickets" element={<ServiceTicketsView />} />
-                  <Route path="customer-portal" element={<CustomerPortal />} />
-                  <Route path="financials" element={<FinancialsView />} />
-                  <Route path="subsidies" element={<SubsidiesView />} />
-                  <Route path="technicians" element={<TechniciansManagementView />} />
-                  <Route path="reports" element={<ReportsView />} />
-                  <Route path="approvals" element={<AdminReviewCenter />} />
-                  <Route path="users" element={<UserManagementView />} />
+                  <Route path="/dashboard" element={<RoleBasedHome />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/enquiries" element={<EnquiriesView />} />
+                  <Route path="/customers" element={<CustomersView />} />
+                  <Route path="/surveys" element={<SurveysView />} />
+                  <Route path="/quotations" element={<QuotationsView />} />
+                  <Route path="/orders" element={<OrdersView />} />
+                  <Route path="/equipment-tracking" element={<SmartEquipmentView />} />
+                  <Route path="/inventory" element={<InventoryView />} />
+                  <Route path="/technician-portal" element={<TechnicianMobilePortal />} />
+                  <Route path="/installations" element={<InstallationPipelineView />} />
+                  <Route path="/warranties" element={<WarrantyManagementView />} />
+                  <Route path="/service-tickets" element={<ServiceTicketsView />} />
+                  <Route path="/customer-portal" element={<CustomerPortal />} />
+                  <Route path="/financials" element={<FinancialsView />} />
+                  <Route path="/subsidies" element={<SubsidiesView />} />
+                  <Route path="/technicians" element={<TechniciansManagementView />} />
+                  <Route path="/reports" element={<ReportsView />} />
                   
                   {/* Catch-all 404 Route */}
                   <Route path="*" element={<ErrorPage code="404" />} />

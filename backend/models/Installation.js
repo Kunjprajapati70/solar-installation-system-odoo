@@ -95,14 +95,6 @@ const InstallationSchema = new mongoose.Schema(
       remarks: String,
       rating: { type: Number, min: 1, max: 5 },
       acceptedAt: Date
-    },
-    rejectionReason: String,
-    correctionNotes: String,
-    adminApproval: {
-      isApproved: { type: Boolean, default: false },
-      approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-      approvedAt: Date,
-      notes: String
     }
   },
   { timestamps: true }

@@ -3,7 +3,6 @@ import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import DemoRoleBar from '../common/DemoRoleBar';
-import FirstLoginPasswordModal from '../common/FirstLoginPasswordModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import Breadcrumbs from './Breadcrumbs';
 
@@ -39,9 +38,6 @@ const Layout = () => {
       >
         {/* Global Persona Switcher Banner */}
         <DemoRoleBar />
-
-        {/* First-login Password Reset Enforcement Modal */}
-        <FirstLoginPasswordModal />
 
         {/* Top Header Navigation (Sticky within right column, never overlaps sidebar) */}
         <Navbar

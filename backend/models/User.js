@@ -3,12 +3,6 @@ const bcrypt = require('bcryptjs');
 
 const UserSchema = new mongoose.Schema(
   {
-    userId: {
-      type: String,
-      unique: true,
-      sparse: true,
-      trim: true
-    },
     name: {
       type: String,
       required: [true, 'Please provide user name'],
@@ -36,11 +30,6 @@ const UserSchema = new mongoose.Schema(
       enum: ['admin', 'sales', 'technician', 'customer'],
       default: 'customer'
     },
-    department: {
-      type: String,
-      trim: true,
-      default: 'Operations'
-    },
     phone: {
       type: String,
       trim: true
@@ -57,32 +46,6 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       default: true
     },
-    status: {
-      type: String,
-      enum: ['active', 'inactive', 'pending_approval', 'rejected'],
-      default: 'active'
-    },
-    mustChangePassword: {
-      type: Boolean,
-      default: false
-    },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
-    },
-    approvalDetails: {
-      status: {
-        type: String,
-        enum: ['pending', 'approved', 'rejected'],
-        default: 'approved'
-      },
-      requestedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-      reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-      requestDate: { type: Date, default: Date.now },
-      reviewDate: Date,
-      rejectionReason: String,
-      notes: String
-    },
     // Technician specific metadata
     technicianDetails: {
       specialization: [String],
@@ -94,15 +57,6 @@ const UserSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-// Auto-generate userId if not provided
-UserSchema.pre('validate', function (next) {
-  if (!this.userId) {
-    const prefix = this.role ? this.role.substring(0, 3).toUpperCase() : 'USR';
-    this.userId = `${prefix}-${Date.now().toString().slice(-4)}-${Math.floor(100 + Math.random() * 900)}`;
-  }
-  next();
-});
 
 // Hash password before saving
 UserSchema.pre('save', async function (next) {

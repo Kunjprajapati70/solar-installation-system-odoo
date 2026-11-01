@@ -27,17 +27,8 @@ const PaymentSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ['upi', 'bank_transfer', 'cheque', 'cash', 'card', 'demo_upi', 'demo_card', 'demo_netbanking', 'demo_cash'],
+      enum: ['upi', 'bank_transfer', 'cheque', 'cash', 'card'],
       default: 'bank_transfer'
-    },
-    isDemo: {
-      type: Boolean,
-      default: false
-    },
-    demoScenario: {
-      type: String,
-      enum: ['success', 'insufficient_funds', 'network_failure', 'card_declined'],
-      default: 'success'
     },
     transactionReference: {
       type: String,

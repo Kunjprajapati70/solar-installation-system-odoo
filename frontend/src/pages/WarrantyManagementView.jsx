@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Pagination from '../components/ui/Pagination';
-import PrintDocumentModal from '../components/common/PrintDocumentModal';
 
 const WarrantyManagementView = () => {
   const { showToast } = useToast();
@@ -340,14 +339,68 @@ const WarrantyManagementView = () => {
         />
       </div>
 
-      {/* Official Isolated Printable Warranty Certificate Modal */}
+      {/* Certificate Modal */}
       {showCertModal && selectedWarranty && (
-        <PrintDocumentModal
-          isOpen={showCertModal}
-          documentData={selectedWarranty}
-          documentType="warranty"
-          onClose={() => setShowCertModal(false)}
-        />
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-900 text-white w-full max-w-lg rounded-2xl p-6 border border-solar-500/40 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center space-x-2">
+                <Award className="w-5 h-5 text-solar-400" />
+                <span className="font-bold text-sm tracking-tight">Official Warranty Certificate</span>
+              </div>
+              <button onClick={() => setShowCertModal(false)} className="text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 rounded-xl bg-midnight-950 border border-slate-800 space-y-3 text-xs">
+              <div className="flex justify-between items-center text-slate-400 pb-2 border-b border-slate-800">
+                <span>Certificate No:</span>
+                <span className="font-mono text-solar-400 font-bold">{selectedWarranty.certificateNumber}</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-slate-300">
+                <div>
+                  <span className="text-slate-500 block text-[10px]">Registered Customer:</span>
+                  <p className="font-semibold">{selectedWarranty.customer?.name || 'Customer'}</p>
+                </div>
+                <div>
+                  <span className="text-slate-500 block text-[10px]">Equipment Category:</span>
+                  <p className="font-semibold capitalize">{selectedWarranty.category} ({selectedWarranty.durationYears} Years)</p>
+                </div>
+                <div>
+                  <span className="text-slate-500 block text-[10px]">Serial Number:</span>
+                  <p className="font-mono font-bold text-white">{selectedWarranty.serialNumber}</p>
+                </div>
+                <div>
+                  <span className="text-slate-500 block text-[10px]">Delivery Handover Date:</span>
+                  <p className="font-mono">{selectedWarranty.startDate ? new Date(selectedWarranty.startDate).toLocaleDateString() : 'Pending'}</p>
+                </div>
+                <div>
+                  <span className="text-slate-500 block text-[10px]">Warranty Expiry Date:</span>
+                  <p className="font-mono text-emerald-400 font-bold">{selectedWarranty.expiryDate ? new Date(selectedWarranty.expiryDate).toLocaleDateString() : 'Pending'}</p>
+                </div>
+                <div>
+                  <span className="text-slate-500 block text-[10px]">Service Eligibility:</span>
+                  <p className="text-emerald-400 font-bold">100% Free Repairs (₹0 Customer Bill)</p>
+                </div>
+              </div>
+
+              <div className="p-2.5 rounded bg-slate-900 border border-slate-800 text-[11px] text-slate-400">
+                {selectedWarranty.coverageDetails || 'Covers degradation, cell cracking, inverter motherboard faults, and manufacturer defects under standard SLA.'}
+              </div>
+            </div>
+
+            <div className="flex justify-between space-x-2 pt-2">
+              <Button variant="ghost" size="sm" onClick={() => setShowCertModal(false)}>
+                Close
+              </Button>
+              <Button variant="primary" size="sm" onClick={() => window.print()}>
+                Print Certificate
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

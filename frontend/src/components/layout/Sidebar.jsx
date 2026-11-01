@@ -30,10 +30,8 @@ const Sidebar = ({ isOpen, closeSidebar, isCollapsed, toggleCollapse }) => {
 
   // Navigation Items defined per role
   const adminNav = [
-    { to: '/', label: 'Overview Dashboard', icon: LayoutDashboard, badge: 'Live' },
-    { to: '/approvals', label: 'Admin Review Center', icon: ClipboardCheck, badge: 'Review', highlight: true },
-    { to: '/users', label: 'User Management', icon: Users, badge: 'RBAC' },
-    { to: '/enquiries', label: 'Customer Leads', icon: MessageSquarePlus },
+    { to: '/dashboard', label: 'Overview Dashboard', icon: LayoutDashboard, badge: 'Live' },
+    { to: '/enquiries', label: 'Enquiries Pipeline', icon: MessageSquarePlus },
     { to: '/customers', label: 'Customer Directory', icon: Users },
     { to: '/surveys', label: 'Site Surveys', icon: ClipboardCheck, badge: 'Approval' },
     { to: '/quotations', label: 'Quotation Engine', icon: FileSpreadsheet },
@@ -52,9 +50,8 @@ const Sidebar = ({ isOpen, closeSidebar, isCollapsed, toggleCollapse }) => {
   ];
 
   const salesNav = [
-    { to: '/', label: 'Sales Dashboard', icon: LayoutDashboard },
+    { to: '/dashboard', label: 'Sales Dashboard', icon: LayoutDashboard },
     { to: '/enquiries', label: 'Lead Enquiries', icon: MessageSquarePlus },
-    { to: '/users', label: 'User & Staff Request', icon: Users },
     { to: '/customers', label: 'Customer CRM', icon: Users },
     { to: '/surveys', label: 'Site Surveys', icon: ClipboardCheck, badge: 'Approval' },
     { to: '/quotations', label: 'Quotation Engine', icon: FileSpreadsheet },

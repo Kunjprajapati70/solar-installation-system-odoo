@@ -125,33 +125,12 @@ class OrderController {
   }
 
   /**
-   * Helper to resolve customer profile from authenticated user
-   */
-  static async getCustomerForUser(userId, userEmail) {
-    let customer = await Customer.findOne({ user: userId });
-    if (!customer && userEmail) {
-      customer = await Customer.findOne({ email: userEmail });
-    }
-    return customer;
-  }
-
-  /**
    * GET /api/orders
-   * Enforces strict customer data privacy in MongoDB query
    */
   static async listOrders(req, res, next) {
     try {
       const { status, paymentStatus, search, page = 1, limit = 50 } = req.query;
       const query = {};
-
-      // Security requirement: customer can only see their own orders
-      if (req.user?.role === 'customer') {
-        const customer = await OrderController.getCustomerForUser(req.user._id, req.user.email);
-        if (!customer) {
-          return ApiResponse.success(res, [], 'No orders found', 200, { total: 0, page: 1, limit, pages: 0 });
-        }
-        query.customer = customer._id;
-      }
 
       if (status) query.orderStatus = status;
       if (paymentStatus) query.paymentStatus = paymentStatus;
@@ -185,7 +164,6 @@ class OrderController {
 
   /**
    * GET /api/orders/:id
-   * Enforces customer ownership on single record retrieval
    */
   static async getById(req, res, next) {
     try {
@@ -197,15 +175,6 @@ class OrderController {
 
       if (!order) {
         return ApiResponse.notFound(res, 'Order not found.');
-      }
-
-      // Security check: if customer, verify ownership
-      if (req.user?.role === 'customer') {
-        const customer = await OrderController.getCustomerForUser(req.user._id, req.user.email);
-        const orderCustomerId = order.customer?._id?.toString() || order.customer?.toString();
-        if (!customer || orderCustomerId !== customer._id.toString()) {
-          return ApiResponse.forbidden(res, 'Security Policy Violation: You cannot access another customer’s order.');
-        }
       }
 
       return ApiResponse.success(res, order);

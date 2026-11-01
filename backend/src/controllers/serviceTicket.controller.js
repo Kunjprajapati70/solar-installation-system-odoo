@@ -61,8 +61,7 @@ class ServiceTicketController {
 
       // If logged in as customer, only show customer's tickets
       if (req.user.role === 'customer') {
-        let cust = await Customer.findOne({ user: req.user._id });
-        if (!cust) cust = await Customer.findOne({ email: req.user.email });
+        const cust = await Customer.findOne({ user: req.user._id });
         if (cust) query.customer = cust._id;
       }
 
@@ -187,23 +186,6 @@ class ServiceTicketController {
         resolved,
         `Service ticket resolved. Customer payable: ₹${resolved.charges.totalCustomerPayable} (${resolved.warrantyStatusAtTicket === 'in_warranty' ? 'Covered by 100% Active Warranty' : 'Out-of-warranty billing'}).`
       );
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  /**
-   * PUT /api/service-tickets/:id/reject
-   */
-  static async rejectTicket(req, res, next) {
-    try {
-      const { rejectionReason, notes } = req.body;
-      const ticket = await ServiceTicket.findById(req.params.id);
-      if (!ticket) return ApiResponse.notFound(res, 'Service ticket not found.');
-      ticket.status = 'rejected';
-      ticket.rejectionReason = (rejectionReason || notes || 'Service request rejected by service manager').trim();
-      await ticket.save();
-      return ApiResponse.success(res, ticket, 'Service ticket marked as rejected and reason saved.');
     } catch (err) {
       next(err);
     }

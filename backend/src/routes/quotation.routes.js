@@ -22,7 +22,6 @@ router.route('/:id/reject')
   .put(authorize('admin', 'sales'), QuotationController.rejectQuotation)
   .post(authorize('admin', 'sales'), QuotationController.rejectQuotation);
 
-router.put('/:id/request-corrections', authorize('admin', 'sales'), QuotationController.requestCorrections);
 router.put('/:id/status', authorize('admin', 'sales'), QuotationController.updateStatus);
 
 module.exports = router;

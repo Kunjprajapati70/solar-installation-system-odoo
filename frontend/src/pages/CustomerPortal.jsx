@@ -15,13 +15,9 @@ import {
   Plus,
   Send,
   Sparkles,
-  QrCode,
-  Printer
+  QrCode
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import Button from '../components/ui/Button';
-import DemoPaymentModal from '../components/common/DemoPaymentModal';
-import PrintDocumentModal from '../components/common/PrintDocumentModal';
 
 const CustomerPortal = () => {
   const { user } = useAuth();
@@ -31,8 +27,6 @@ const CustomerPortal = () => {
 
   // Service Complaint Form State
   const [showRaiseTicketModal, setShowRaiseTicketModal] = useState(false);
-  const [paymentModalState, setPaymentModalState] = useState({ isOpen: false, order: null });
-  const [printModalState, setPrintModalState] = useState({ isOpen: false, document: null, type: 'invoice' });
   const [ticketForm, setTicketForm] = useState({
     equipmentSerialNumber: '',
     issueCategory: 'inverter_fault',
@@ -275,16 +269,6 @@ const CustomerPortal = () => {
                 <div className="p-2 rounded bg-slate-900 border border-slate-800 text-[11px] text-emerald-400">
                   ✓ Eligible for ₹0 repair charge on all manufacturer defects and power degradation.
                 </div>
-                <div className="pt-2 flex justify-end">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    icon={Printer}
-                    onClick={() => setPrintModalState({ isOpen: true, document: w, type: 'warranty' })}
-                  >
-                    Print Certificate
-                  </Button>
-                </div>
               </div>
             ))}
           </div>
@@ -294,36 +278,6 @@ const CustomerPortal = () => {
       {/* TAB 4: Payments & Receipts */}
       {activeTab === 'payments' && (
         <div className="space-y-4">
-          {orders.length > 0 && orders[0].balanceAmount > 0 && (
-            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <span className="text-[10px] uppercase font-bold text-amber-400">Outstanding Balance Due</span>
-                <p className="text-xl font-bold font-mono text-white mt-0.5">
-                  ₹{orders[0].balanceAmount.toLocaleString('en-IN')}
-                </p>
-                <p className="text-xs text-amber-300/80">Order #{orders[0].orderNumber} • Milestone Payment Pending</p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="primary"
-                  size="sm"
-                  icon={CreditCard}
-                  onClick={() => setPaymentModalState({ isOpen: true, order: orders[0] })}
-                >
-                  Pay Now (Demo)
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  icon={Printer}
-                  onClick={() => setPrintModalState({ isOpen: true, document: orders[0], type: 'invoice' })}
-                >
-                  View Invoice
-                </Button>
-              </div>
-            </div>
-          )}
-
           <div className="rounded-xl glass-card overflow-hidden border border-slate-800">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-900 text-slate-400 uppercase text-[10px] border-b border-slate-800">
@@ -334,7 +288,6 @@ const CustomerPortal = () => {
                   <th className="py-2.5 px-3">Payment Method</th>
                   <th className="py-2.5 px-3">Date</th>
                   <th className="py-2.5 px-3">Status</th>
-                  <th className="py-2.5 px-3 text-right">Receipt</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 font-sans">
@@ -347,16 +300,6 @@ const CustomerPortal = () => {
                     <td className="py-2.5 px-3 text-slate-400">{new Date(p.paidAt).toLocaleDateString()}</td>
                     <td className="py-2.5 px-3">
                       <span className="text-emerald-400 font-bold uppercase text-[10px]">Completed</span>
-                    </td>
-                    <td className="py-2.5 px-3 text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        icon={Printer}
-                        onClick={() => setPrintModalState({ isOpen: true, document: p, type: 'receipt' })}
-                      >
-                        Receipt
-                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -484,28 +427,6 @@ const CustomerPortal = () => {
             </form>
           </div>
         </div>
-      )}
-
-      {/* Demo Payment Modal */}
-      {paymentModalState.isOpen && (
-        <DemoPaymentModal
-          isOpen={paymentModalState.isOpen}
-          order={paymentModalState.order}
-          onClose={() => setPaymentModalState({ isOpen: false, order: null })}
-          onPaymentSuccess={() => {
-            fetchCustomerProfile();
-          }}
-        />
-      )}
-
-      {/* Printable Document Modal */}
-      {printModalState.isOpen && (
-        <PrintDocumentModal
-          isOpen={printModalState.isOpen}
-          documentData={printModalState.document}
-          documentType={printModalState.type}
-          onClose={() => setPrintModalState({ isOpen: false, document: null, type: 'invoice' })}
-        />
       )}
     </div>
   );

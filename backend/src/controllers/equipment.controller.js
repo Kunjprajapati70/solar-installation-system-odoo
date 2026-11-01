@@ -58,48 +58,15 @@ class EquipmentController {
   }
 
   /**
-   * Helper to resolve customer profile from authenticated user
-   */
-  static async getCustomerForUser(userId, userEmail) {
-    const Customer = require('../../models/Customer');
-    let customer = await Customer.findOne({ user: userId });
-    if (!customer && userEmail) {
-      customer = await Customer.findOne({ email: userEmail });
-    }
-    return customer;
-  }
-
-  /**
    * GET /api/equipment
    */
   static async listEquipment(req, res, next) {
     try {
-      const { search, category, status, operation, customerId, orderId, page = 1, limit = 50 } = req.query;
+      const { search, category, status, page = 1, limit = 50 } = req.query;
       const query = {};
-
-      // Security check: customer can only see their own installed equipment
-      if (req.user?.role === 'customer') {
-        const customer = await EquipmentController.getCustomerForUser(req.user._id, req.user.email);
-        if (!customer) {
-          return ApiResponse.success(res, [], 'No equipment found', 200, { total: 0, page: 1, limit, pages: 0 });
-        }
-        query.installedAtCustomer = customer._id;
-      }
 
       if (category) query.category = category;
       if (status) query.status = status;
-      if (customerId) query.installedAtCustomer = customerId;
-      if (orderId) query.allocatedToOrder = orderId;
-
-      // Filter based on business operation
-      if (operation === 'dispatch') {
-        query.status = 'in_stock';
-      } else if (operation === 'installation') {
-        query.status = { $in: ['reserved', 'dispatched'] };
-      } else if (operation === 'service' || operation === 'warranty') {
-        query.status = 'installed';
-      }
-
       if (search) {
         query.$or = [
           { serialNumber: { $regex: search, $options: 'i' } },
@@ -111,7 +78,7 @@ class EquipmentController {
       const skip = (Number(page) - 1) * Number(limit);
       const [items, total] = await Promise.all([
         Equipment.find(query)
-          .populate('installedAtCustomer', 'name email phone customerCode')
+          .populate('installedAtCustomer', 'name email phone')
           .populate('allocatedToOrder', 'orderNumber')
           .sort({ createdAt: -1 })
           .skip(skip)
@@ -125,66 +92,6 @@ class EquipmentController {
         limit: Number(limit),
         pages: Math.ceil(total / Number(limit))
       });
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  /**
-   * GET /api/equipment/dropdown
-   * Searchable dropdown data tailored for live equipment selection
-   */
-  static async getDropdownOptions(req, res, next) {
-    try {
-      const { search = '', operation, category, customerId, orderId, limit = 50 } = req.query;
-      const query = {};
-
-      if (req.user?.role === 'customer') {
-        const customer = await EquipmentController.getCustomerForUser(req.user._id, req.user.email);
-        if (!customer) return ApiResponse.success(res, []);
-        query.installedAtCustomer = customer._id;
-      }
-
-      if (category) query.category = category;
-      if (customerId) query.installedAtCustomer = customerId;
-      if (orderId) query.allocatedToOrder = orderId;
-
-      if (operation === 'dispatch') {
-        query.status = 'in_stock';
-      } else if (operation === 'installation') {
-        query.status = { $in: ['reserved', 'dispatched', 'in_stock'] };
-      } else if (operation === 'service' || operation === 'warranty') {
-        query.status = 'installed';
-      }
-
-      if (search.trim()) {
-        query.$or = [
-          { serialNumber: { $regex: search.trim(), $options: 'i' } },
-          { brand: { $regex: search.trim(), $options: 'i' } },
-          { model: { $regex: search.trim(), $options: 'i' } }
-        ];
-      }
-
-      const items = await Equipment.find(query)
-        .populate('installedAtCustomer', 'name customerCode')
-        .populate('allocatedToOrder', 'orderNumber')
-        .select('serialNumber brand model category status installedAtCustomer allocatedToOrder')
-        .sort({ serialNumber: 1 })
-        .limit(Number(limit));
-
-      const options = items.map((item) => ({
-        value: item.serialNumber,
-        serialNumber: item.serialNumber,
-        label: `${item.serialNumber} — ${item.brand} ${item.model} (${item.status.replace(/_/g, ' ')})`,
-        brand: item.brand,
-        model: item.model,
-        category: item.category,
-        status: item.status,
-        customerName: item.installedAtCustomer?.name,
-        orderNumber: item.allocatedToOrder?.orderNumber
-      }));
-
-      return ApiResponse.success(res, options);
     } catch (err) {
       next(err);
     }

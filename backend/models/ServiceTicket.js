@@ -66,12 +66,10 @@ const ServiceTicketSchema = new mongoose.Schema(
         'in_progress',
         'parts_awaited',
         'resolved',
-        'rejected',
         'closed'
       ],
       default: 'open'
     },
-    rejectionReason: String,
     charges: {
       partsCost: { type: Number, default: 0 },
       labourCost: { type: Number, default: 0 },

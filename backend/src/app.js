@@ -31,6 +31,7 @@ app.get('/api/health', (req, res) => {
     status: 'online',
     service: 'SunPower Solutions Enterprise Solar Management Architecture',
     database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    uptime: Math.floor(process.uptime()),
     timestamp: new Date().toISOString()
   });
 });
@@ -52,7 +53,6 @@ app.get('/api/docs', (req, res) => {
 // 1. Authentication & Users
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/users', require('./routes/user.routes'));
-app.use('/api/approvals', require('./routes/approval.routes'));
 
 // 2. Customer Management & Dedicated Customer Portal
 app.use('/api/customers', require('./routes/customer.routes'));
@@ -90,7 +90,6 @@ app.use('/api/reports', require('./routes/report.routes'));
 app.use('/api/inventory', require('./routes/inventory.routes'));
 app.use('/api/subsidies', require('./routes/subsidy.routes'));
 app.use('/api/enquiries', require('./routes/enquiry.routes'));
-app.use('/api/leads', require('./routes/enquiry.routes')); // Alias for Customer Leads Management
 app.use('/api/notifications', require('./routes/notification.routes'));
 app.use('/api/settings', require('./routes/setting.routes'));
 

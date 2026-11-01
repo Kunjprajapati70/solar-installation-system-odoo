@@ -5,8 +5,6 @@ const { protect } = require('../middleware/auth.middleware');
 
 router.use(protect);
 
-router.get('/', DashboardController.getFullDashboard);
-router.get('/comprehensive', DashboardController.getComprehensiveAnalytics);
 router.get('/dashboard', DashboardController.getFullDashboard);
 router.get('/stats', DashboardController.getStats);
 router.get('/revenue-expenses', DashboardController.getRevenueExpenses);

@@ -58,13 +58,10 @@ const OrderSchema = new mongoose.Schema(
         'installed',
         'delivery_confirmed',
         'completed',
-        'rejected',
         'cancelled'
       ],
       default: 'confirmed'
     },
-    rejectionReason: String,
-    correctionNotes: String,
     allocatedEquipment: [
       {
         equipment: {

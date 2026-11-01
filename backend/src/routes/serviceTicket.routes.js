@@ -18,6 +18,5 @@ router.put('/:id/assign', authorize('admin'), ServiceTicketController.assignTech
 router.post('/:id/assign', authorize('admin'), ServiceTicketController.assignTechnician);
 router.put('/:id/resolve', authorize('admin', 'technician'), ServiceTicketController.resolveTicket);
 router.post('/:id/resolve', authorize('admin', 'technician'), ServiceTicketController.resolveTicket);
-router.put('/:id/reject', authorize('admin'), ServiceTicketController.rejectTicket);
 
 module.exports = router;

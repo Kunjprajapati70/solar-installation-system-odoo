@@ -24,7 +24,6 @@ import {
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Pagination from '../components/ui/Pagination';
-import PrintDocumentModal from '../components/common/PrintDocumentModal';
 
 const QuotationsView = () => {
   const { user } = useAuth();
@@ -690,14 +689,61 @@ const QuotationsView = () => {
         </div>
       )}
 
-      {/* Enterprise Isolated Print Document Modal */}
+      {/* Print View Modal */}
       {showPrintModal && selectedQuotation && (
-        <PrintDocumentModal
-          isOpen={showPrintModal}
-          documentData={selectedQuotation}
-          documentType="quotation"
-          onClose={() => setShowPrintModal(false)}
-        />
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="glass-card w-full max-w-2xl rounded-2xl border border-slate-700 p-6 space-y-4 my-8">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-white flex items-center space-x-2">
+                <Printer className="w-5 h-5 text-solar-400" />
+                <span>Quotation Document • {selectedQuotation.quotationNumber}</span>
+              </h3>
+              <button onClick={() => setShowPrintModal(false)} className="text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-3 font-mono">
+              <div className="flex justify-between border-b border-slate-800 pb-2">
+                <div>
+                  <span className="text-white font-bold block">{selectedQuotation.customer?.name}</span>
+                  <span className="text-slate-400 text-[11px]">{selectedQuotation.systemCapacityKw} kW {selectedQuotation.systemType}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-solar-400 font-bold block">{selectedQuotation.quotationNumber}</span>
+                  <span className="text-slate-400 text-[11px]">Valid 30 Days</span>
+                </div>
+              </div>
+
+              {/* BOM Table */}
+              <div className="space-y-1">
+                <span className="text-[10px] uppercase text-slate-500 font-bold">Equipment Schedule</span>
+                {(selectedQuotation.bom || []).map((b, i) => (
+                  <div key={i} className="flex justify-between text-slate-300 text-[11px]">
+                    <span>{b.quantity}x {b.name}</span>
+                    <span>₹{b.totalPrice?.toLocaleString('en-IN')}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Totals */}
+              <div className="pt-2 border-t border-slate-800 space-y-1 text-right">
+                <div className="text-slate-400">Gross: ₹{selectedQuotation.pricing?.grossTotal?.toLocaleString('en-IN')}</div>
+                <div className="text-emerald-400">PM Surya Ghar Subsidy: -₹{selectedQuotation.pricing?.estimatedSubsidy?.toLocaleString('en-IN')}</div>
+                <div className="text-white font-bold text-sm">Net Payable: ₹{selectedQuotation.pricing?.netPayable?.toLocaleString('en-IN')}</div>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-2">
+              <Button variant="ghost" size="sm" onClick={() => setShowPrintModal(false)}>
+                Close
+              </Button>
+              <Button variant="primary" size="sm" onClick={() => window.print()}>
+                Print / Save PDF
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

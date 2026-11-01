@@ -36,7 +36,7 @@ export const Login = () => {
     if (!authLoading && token && user) {
       if (user.role === 'technician') navigate('/technician-portal', { replace: true });
       else if (user.role === 'customer') navigate('/customer-portal', { replace: true });
-      else navigate('/', { replace: true });
+      else navigate('/dashboard', { replace: true });
     }
   }, [authLoading, token, user, navigate]);
 
@@ -99,7 +99,7 @@ export const Login = () => {
       if (result.success) {
         setSuccessMsg('Authentication successful! Initializing workspace...');
         setTimeout(() => {
-          navigate('/');
+          navigate('/dashboard');
         }, 600);
       } else {
         setError(result.message || 'Invalid email or password. Please check credentials.');
@@ -128,7 +128,7 @@ export const Login = () => {
         setTimeout(() => {
           if (role === 'technician') navigate('/technician-portal');
           else if (role === 'customer') navigate('/customer-portal');
-          else navigate('/');
+          else navigate('/dashboard');
         }, 500);
       } else {
         setError(res.message);

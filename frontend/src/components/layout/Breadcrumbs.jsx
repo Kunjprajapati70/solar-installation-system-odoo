@@ -26,7 +26,7 @@ export const Breadcrumbs = () => {
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
-  if (pathnames.length === 0) {
+  if (pathnames.length === 0 || (pathnames.length === 1 && pathnames[0] === 'dashboard')) {
     return (
       <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 mb-4">
         <Home className="w-3.5 h-3.5 text-solar-500 dark:text-solar-400" />
@@ -37,7 +37,7 @@ export const Breadcrumbs = () => {
 
   return (
     <nav className="flex items-center space-x-1.5 text-xs text-slate-500 dark:text-slate-400 mb-4" aria-label="Breadcrumb">
-      <Link to="/" className="flex items-center space-x-1 hover:text-solar-600 dark:hover:text-solar-400 transition">
+      <Link to="/dashboard" className="flex items-center space-x-1 hover:text-solar-600 dark:hover:text-solar-400 transition">
         <Home className="w-3.5 h-3.5" />
         <span>Dashboard</span>
       </Link>

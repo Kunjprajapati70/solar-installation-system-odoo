@@ -56,12 +56,10 @@ const QuotationSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['draft', 'sent', 'approved', 'rejected', 'corrections_requested', 'converted'],
+      enum: ['draft', 'sent', 'approved', 'rejected', 'converted'],
       default: 'draft'
     },
     approvedAt: Date,
-    rejectionReason: String,
-    correctionNotes: String,
     validUntil: {
       type: Date,
       default: () => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)

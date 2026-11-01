@@ -86,39 +86,24 @@ class AuthController {
    */
   static async login(req, res, next) {
     try {
-      const { email, password, userId, username } = req.body;
-      const identifier = (email || userId || username || '').trim();
+      const { email, password } = req.body;
 
-      if (!identifier || !password) {
-        return ApiResponse.badRequest(res, 'Please provide both User ID / email and password.');
+      if (!email || !password) {
+        return ApiResponse.badRequest(res, 'Please provide both email and password.');
       }
 
-      const user = await User.findOne({
-        $or: [
-          { email: identifier.toLowerCase() },
-          { userId: identifier }
-        ]
-      }).select('+password');
-
+      const user = await User.findOne({ email: email.toLowerCase().trim() }).select('+password');
       if (!user) {
-        return ApiResponse.unauthorized(res, 'Invalid credentials. Please verify your User ID / email and password.');
+        return ApiResponse.unauthorized(res, 'Invalid email or password credentials.');
       }
 
       const isMatch = await user.matchPassword(password);
       if (!isMatch) {
-        return ApiResponse.unauthorized(res, 'Invalid credentials. Please verify your User ID / email and password.');
+        return ApiResponse.unauthorized(res, 'Invalid email or password credentials.');
       }
 
-      if (user.isActive === false || user.status === 'inactive') {
+      if (user.isActive === false) {
         return ApiResponse.forbidden(res, 'Account deactivated. Please contact your system administrator.');
-      }
-
-      if (user.status === 'pending_approval') {
-        return ApiResponse.forbidden(res, 'Account is pending Administrator review and approval. You will receive an alert once approved.');
-      }
-
-      if (user.status === 'rejected') {
-        return ApiResponse.forbidden(res, 'Account application was rejected by Administrator.');
       }
 
       const token = generateToken(user._id);
@@ -134,16 +119,12 @@ class AuthController {
       const userPayload = {
         _id: user._id,
         id: user._id,
-        userId: user.userId,
         name: user.name,
         email: user.email,
         role: user.role,
-        department: user.department,
         phone: user.phone,
         avatar: user.avatar,
         address: user.address,
-        mustChangePassword: Boolean(user.mustChangePassword),
-        status: user.status,
         technicianDetails: user.technicianDetails,
         customerProfile
       };
@@ -159,45 +140,6 @@ class AuthController {
           token
         }
       });
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  /**
-   * POST /api/auth/change-first-password
-   * Enforces temporary password replacement on first login
-   */
-  static async changeFirstPassword(req, res, next) {
-    try {
-      const { oldPassword, newPassword } = req.body;
-
-      if (!oldPassword || !newPassword) {
-        return ApiResponse.badRequest(res, 'Current temporary password and new password are required.');
-      }
-
-      if (newPassword.length < 6) {
-        return ApiResponse.badRequest(res, 'New password must be at least 6 characters in length.');
-      }
-
-      const user = await User.findById(req.user._id).select('+password');
-      if (!user) {
-        return ApiResponse.notFound(res, 'User account not found.');
-      }
-
-      const isMatch = await user.matchPassword(oldPassword);
-      if (!isMatch) {
-        return ApiResponse.badRequest(res, 'Current password does not match. Please verify your temporary credentials.');
-      }
-
-      user.password = newPassword;
-      user.mustChangePassword = false;
-      await user.save();
-
-      return ApiResponse.success(res, {
-        userId: user.userId,
-        mustChangePassword: false
-      }, 'Password updated successfully. You can now use your permanent password for all future logins.');
     } catch (err) {
       next(err);
     }
