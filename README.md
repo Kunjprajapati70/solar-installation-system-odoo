@@ -15,52 +15,8 @@
 [![Socket.IO](https://img.shields.io/badge/socket.io-4.8.0-010101?style=flat-square&logo=socket.io&logoColor=white)](https://socket.io/)
 [![License](https://img.shields.io/badge/license-Unspecified-lightgrey?style=flat-square)](#18-license)
 
-[Key Features](#3-key-features) • [System Architecture](#4-system-architecture) • [Installation & Setup](#7-installation--setup) • [API Documentation](#12-api-documentation) • [Workflow](#13-workflow) • [Contributors](#16-contributors)
 
 </div>
-
----
-
-## 📑 Table of Contents
-
-- [1. Project Header](#1-project-header)
-- [2. About the Project](#2-about-the-project)
-  - [The Problem It Solves](#the-problem-it-solves)
-  - [Target Personas](#target-personas)
-  - [Core Objectives](#core-objectives)
-- [3. Key Features](#3-key-features)
-- [4. System Architecture](#4-system-architecture)
-  - [Layered Architecture Diagram](#layered-architecture-diagram)
-  - [Architecture In Detail](#architecture-in-detail)
-- [5. Technology Stack](#5-technology-stack)
-- [6. Project Structure](#6-project-structure)
-- [7. Installation & Setup](#7-installation--setup)
-  - [Prerequisites](#prerequisites)
-  - [Repository Cloning](#repository-cloning)
-  - [Quick Start (Root Workspace)](#quick-start-root-workspace)
-  - [Manual Setup (Separate Terminals)](#manual-setup-separate-terminals)
-  - [Database Seeding](#database-seeding)
-  - [Local Development URLs](#local-development-urls)
-- [8. Environment Variables](#8-environment-variables)
-- [9. User Roles & Permissions](#9-user-roles--permissions)
-  - [Role-Permission Matrix](#role-permission-matrix)
-  - [Pre-Seeded Demonstration Accounts](#pre-seeded-demonstration-accounts)
-- [10. Database Design & Models](#10-database-design--models)
-  - [Mongoose Data Models](#mongoose-data-models)
-  - [Entity-Relationship Diagram](#entity-relationship-diagram)
-- [11. Application Screenshots](#11-application-screenshots)
-- [12. API Documentation](#12-api-documentation)
-- [13. Solar Installation Lifecycle Workflow](#13-solar-installation-lifecycle-workflow)
-  - [Lifecycle Flowchart](#lifecycle-flowchart)
-  - [Core Business Rules Enforced](#core-business-rules-enforced)
-- [14. Security & Data Integrity](#14-security--data-integrity)
-  - [Implemented Security Controls](#implemented-security-controls)
-  - [Recommended Security Enhancements](#recommended-security-enhancements)
-- [15. Future Improvements](#15-future-improvements)
-- [16. Contributors](#16-contributors)
-- [17. Contribution Guidelines](#17-contribution-guidelines)
-- [18. License](#18-license)
-- [19. Contact & Acknowledgements](#19-contact--acknowledgements)
 
 ---
 
