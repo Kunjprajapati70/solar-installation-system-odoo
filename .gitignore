@@ -1,45 +1,86 @@
-# Dependencies
+# ==============================================================================
+# Solar Installation Management System - Git Ignore Configuration
+# ==============================================================================
+
+# 1. Dependency Directories
 node_modules/
 */node_modules/
+.pnp
+.pnp.js
 
-# Production builds
+# 2. Environment Variables & Credentials (CRITICAL: Never commit secrets)
+.env
+.env.*
+*.env
+backend/.env
+frontend/.env
+*.env.local
+*.env.development.local
+*.env.test.local
+*.env.production.local
+!*.env.example
+!*.env.template
+
+# 3. Production Builds & Bundler Artifacts
 dist/
+dist-ssr/
 build/
+out/
+.vite/
 */dist/
 */build/
+*/out/
+*.tsbuildinfo
 
-# Environment variables
-.env
-.env.local
-.env.*.local
-*.env
-!*.env.example
-
-# Logs
+# 4. Logs and Debugging Output
 logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
+chrome_err.log
 
-# Uploads content (ignore uploaded files but keep folder structure via .gitkeep)
+# 5. User Uploads & Media (Preserve structure with .gitkeep)
 backend/uploads/*
-!backend/uploads/**/.gitkeep
 !backend/uploads/.gitkeep
+uploads/*
+!uploads/.gitkeep
 
-# Temporary files
+# 6. Temporary and Cache Files
 tmp/
 temp/
+.temp/
+.cache/
+.eslintcache
+.stylelintcache
 
-# OS and Editor files
+# 7. Testing & Coverage
+coverage/
+.nyc_output/
+.playwright/
+test-results/
+
+# 8. Operating System Specific Files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
-.vscode/
-!.vscode/extensions.json
+[Dd]esktop.ini
+
+# 9. IDE & Code Editor Files
 .idea/
+.vscode/*
+!.vscode/extensions.json
+*.sublime-workspace
+*.sublime-project
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.bak

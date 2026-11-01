@@ -1,8 +1,12 @@
+# Backend Specific Git Ignore
 node_modules/
 .env
-.env.local
-.env.*.local
+.env.*
+*.env
+*.env.local
 *.log
 uploads/*
-!uploads/**/.gitkeep
 !uploads/.gitkeep
+tmp/
+temp/
+coverage/
