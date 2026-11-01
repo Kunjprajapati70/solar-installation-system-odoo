@@ -6,6 +6,8 @@ import { SocketProvider } from './context/SocketContext';
 import { ToastProvider } from './context/ToastContext';
 import Layout from './components/layout/Layout';
 
+import LandingPage from './pages/LandingPage';
+
 // Auth Pages
 import Login from './pages/auth/Login';
 import ForgotPassword from './pages/auth/ForgotPassword';
@@ -105,6 +107,7 @@ function App() {
             <BrowserRouter>
               <Routes>
                 {/* Standalone Auth Routes */}
+                <Route path="/landing" element={<LandingPage />} />
                 <Route path="/login" element={<PublicAuthRoute><Login /></PublicAuthRoute>} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
