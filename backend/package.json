@@ -7,7 +7,8 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "seed": "node seed/seedLargeData.js",
-    "seed:large": "node seed/seedLargeData.js"
+    "seed:large": "node seed/seedLargeData.js",
+    "test:smtp": "node src/scripts/testSmtp.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

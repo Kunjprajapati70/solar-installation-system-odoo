@@ -54,8 +54,6 @@ const UserManagementView = () => {
     action: 'approve', // 'approve' | 'reject'
     reviewNotes: '',
     rejectionReason: '',
-    assignedUserId: '',
-    assignedPassword: '',
     submitting: false
   });
 
@@ -68,13 +66,16 @@ const UserManagementView = () => {
     role: 'sales',
     department: 'Sales & Marketing',
     password: '',
+    autoGeneratePassword: true,
     mustChangePassword: true
   });
   const [submittingUser, setSubmittingUser] = useState(false);
 
   useEffect(() => {
     fetchUsers();
-    fetchPendingRequests();
+    if (isAdmin) {
+      fetchPendingRequests();
+    }
   }, [roleFilter, statusFilter]);
 
   const fetchUsers = async () => {
@@ -99,7 +100,7 @@ const UserManagementView = () => {
   const fetchPendingRequests = async () => {
     try {
       const res = await api.get('/approvals', {
-        params: { type: 'user_creation', status: 'pending' }
+        params: { requestType: 'user_creation', status: 'pending' }
       });
       if (res.success) {
         setPendingRequests(res.data || []);
@@ -120,6 +121,7 @@ const UserManagementView = () => {
     const randomId = `${prefix}-${Math.floor(1000 + Math.random() * 9000)}`;
     const randomPass = `Solar@${Math.floor(1000 + Math.random() * 9000)}!`;
 
+    const generatedPass = `SunPower@${Math.floor(1000 + Math.random() * 9000)}`;
     setFormData({
       name: '',
       email: '',
@@ -139,7 +141,7 @@ const UserManagementView = () => {
       showToast('Name and email are required', 'warning');
       return;
     }
-    if (isAdmin && (!formData.userId.trim() || !formData.password.trim())) {
+    if (isAdmin && (!formData.userId?.trim() || !formData.password?.trim())) {
       showToast('Admin must assign a User ID and password for this account', 'warning');
       return;
     }
@@ -149,7 +151,7 @@ const UserManagementView = () => {
       const payload = {
         name: formData.name,
         email: formData.email,
-        userId: formData.userId.trim(),
+        userId: formData.userId?.trim(),
         phone: formData.phone,
         role: formData.role,
         department: formData.department,
@@ -203,11 +205,7 @@ const UserManagementView = () => {
     const { request, reviewNotes } = approvalModalState;
     try {
       setApprovalModalState((prev) => ({ ...prev, submitting: true }));
-      const res = await api.put(`/approvals/${request._id}/approve`, {
-        reviewNotes,
-        userId: approvalModalState.assignedUserId,
-        password: approvalModalState.assignedPassword
-      });
+      const res = await api.put(`/approvals/${request._id}/approve`, { reviewNotes });
       if (res.success) {
         showToast(`Request #${request.requestNumber} approved successfully!`, 'success');
         setApprovalModalState({ isOpen: false, request: null, action: 'approve', reviewNotes: '', rejectionReason: '', submitting: false });
@@ -277,11 +275,10 @@ const UserManagementView = () => {
       <div className="flex border-b border-slate-800 space-x-6">
         <button
           onClick={() => setActiveTab('directory')}
-          className={`pb-3 text-sm font-semibold flex items-center space-x-2 border-b-2 transition-colors ${
-            activeTab === 'directory'
-              ? 'border-solar-500 text-solar-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
+          className={`pb-3 text-sm font-semibold flex items-center space-x-2 border-b-2 transition-colors ${activeTab === 'directory'
+            ? 'border-solar-500 text-solar-400'
+            : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
         >
           <Users className="w-4 h-4" />
           <span>User Directory ({users.length})</span>
@@ -290,11 +287,10 @@ const UserManagementView = () => {
         {isAdmin && (
           <button
             onClick={() => setActiveTab('pending_requests')}
-            className={`pb-3 text-sm font-semibold flex items-center space-x-2 border-b-2 transition-colors ${
-              activeTab === 'pending_requests'
-                ? 'border-solar-500 text-solar-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
+            className={`pb-3 text-sm font-semibold flex items-center space-x-2 border-b-2 transition-colors ${activeTab === 'pending_requests'
+              ? 'border-solar-500 text-solar-400'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
           >
             <Clock className="w-4 h-4 text-amber-400" />
             <span>Pending Approvals</span>

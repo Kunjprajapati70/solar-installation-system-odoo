@@ -6,6 +6,7 @@ try {
 }
 
 let cachedTransport = null;
+let lastConfigHash = '';
 
 function smtpConfigured() {
   return Boolean(nodemailer && process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
@@ -13,15 +14,18 @@ function smtpConfigured() {
 
 function getTransport() {
   if (!smtpConfigured()) return null;
-  if (cachedTransport) return cachedTransport;
+  const currentHash = `${process.env.SMTP_HOST}:${process.env.SMTP_PORT}:${process.env.SMTP_USER}:${process.env.SMTP_PASS}`;
+  if (cachedTransport && lastConfigHash === currentHash) return cachedTransport;
 
+  lastConfigHash = currentHash;
+  const rawPass = (process.env.SMTP_PASS || '').trim();
   cachedTransport = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: Number(process.env.SMTP_PORT || 587),
     secure: String(process.env.SMTP_SECURE || '').toLowerCase() === 'true',
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
+      user: (process.env.SMTP_USER || '').trim(),
+      pass: rawPass
     }
   });
 

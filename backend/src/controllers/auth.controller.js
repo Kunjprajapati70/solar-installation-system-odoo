@@ -350,10 +350,10 @@ class AuthController {
         return ApiResponse.badRequest(res, 'Please provide an email address.');
       }
 
-      const genericMessage = 'If an account exists with this email, a 6-digit verification code has been sent.';
-      const user = await User.findOne({ email: email.toLowerCase().trim() });
+      const cleanEmail = email.toLowerCase().trim();
+      const user = await User.findOne({ email: cleanEmail });
       if (!user) {
-        return ApiResponse.success(res, { smtpConfigured: smtpConfigured() }, genericMessage);
+        return ApiResponse.badRequest(res, `No account found with email "${email}". Please verify your registered email address.`);
       }
 
       const otp = String(crypto.randomInt(100000, 1000000));
@@ -372,11 +372,15 @@ class AuthController {
         payload.devOtp = otp;
         payload.devHint = mail?.delivered
           ? 'Email dispatched via SMTP. OTP also attached for development ease.'
-          : 'SMTP server is not reachable or unconfigured. Use this OTP directly.';
+          : `SMTP delivery failed (${mail?.reason || 'smtp_error'}). Verification OTP provided in devOtp.`;
         console.log(`[PASSWORD RESET OTP for ${user.email}]: ${otp}`);
       }
 
-      return ApiResponse.success(res, payload, genericMessage);
+      const message = mail?.delivered
+        ? `A 6-digit verification code has been dispatched to ${user.email}.`
+        : `Verification code generated for ${user.email}.`;
+
+      return ApiResponse.success(res, payload, message);
     } catch (err) {
       next(err);
     }
