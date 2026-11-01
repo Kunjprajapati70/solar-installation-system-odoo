@@ -73,7 +73,14 @@ class AnalyticsService {
         { $group: { _id: null, totalPending: { $sum: '$balanceAmount' } } }
       ]),
       // Low stock (available <= minimumStock)
-      Inventory.countDocuments({ $expr: { $lte: ['$availableStock', '$reorderLevel'] } }),
+      Inventory.countDocuments({
+        $expr: {
+          $lte: [
+            { $ifNull: ['$availableStock', '$currentStock'] },
+            { $ifNull: ['$reorderLevel', 0] }
+          ]
+        }
+      }),
       // Open service tickets
       ServiceTicket.countDocuments({ status: { $in: ['open', 'technician_assigned', 'in_progress', 'parts_awaited'] } }),
       // Warranty claims

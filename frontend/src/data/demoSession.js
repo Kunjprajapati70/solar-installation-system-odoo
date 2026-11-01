@@ -78,6 +78,8 @@ export const FALLBACK_DASHBOARD = {
     activeInstallations: 10,
     totalInstalledCapacityKw: 186.5,
     totalRevenue: 8420000,
+    totalExpenses: 2180000,
+    estimatedProfit: 6240000,
     pendingPayments: 1260000,
     openTicketsCount: 9,
     warrantyClaimsCount: 4,

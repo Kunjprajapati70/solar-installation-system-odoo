@@ -60,6 +60,8 @@ class DashboardController {
           activeInstallations: activeInstalls,
           totalInstalledCapacityKw: Number((stats.installedCapacityKw || 0).toFixed(1)),
           totalRevenue: stats.totalRevenue,
+          totalExpenses: stats.totalExpenses,
+          estimatedProfit: stats.estimatedProfit,
           pendingPayments: stats.pendingPayments,
           openTicketsCount: stats.openTickets,
           warrantyClaimsCount: stats.warrantyClaims,

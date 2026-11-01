@@ -28,16 +28,16 @@ export const Breadcrumbs = () => {
 
   if (pathnames.length === 0) {
     return (
-      <div className="flex items-center space-x-2 text-xs text-slate-400 mb-4">
-        <Home className="w-3.5 h-3.5 text-solar-400" />
-        <span className="text-slate-200 font-medium">Dashboard Overview</span>
+      <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 mb-4">
+        <Home className="w-3.5 h-3.5 text-solar-500 dark:text-solar-400" />
+        <span className="text-slate-800 dark:text-slate-200 font-medium">Dashboard Overview</span>
       </div>
     );
   }
 
   return (
-    <nav className="flex items-center space-x-1.5 text-xs text-slate-400 mb-4" aria-label="Breadcrumb">
-      <Link to="/" className="flex items-center space-x-1 hover:text-solar-400 transition">
+    <nav className="flex items-center space-x-1.5 text-xs text-slate-500 dark:text-slate-400 mb-4" aria-label="Breadcrumb">
+      <Link to="/" className="flex items-center space-x-1 hover:text-solar-600 dark:hover:text-solar-400 transition">
         <Home className="w-3.5 h-3.5" />
         <span>Dashboard</span>
       </Link>
@@ -48,11 +48,11 @@ export const Breadcrumbs = () => {
 
         return (
           <React.Fragment key={to}>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
+            <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600" />
             {isLast ? (
-              <span className="text-white font-semibold capitalize">{label}</span>
+              <span className="text-slate-900 dark:text-white font-semibold capitalize">{label}</span>
             ) : (
-              <Link to={to} className="hover:text-solar-400 transition capitalize">
+              <Link to={to} className="hover:text-solar-600 dark:hover:text-solar-400 transition capitalize">
                 {label}
               </Link>
             )}

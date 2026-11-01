@@ -129,28 +129,27 @@ const AdminDashboard = () => {
   return (
     <div className="space-y-6">
       {/* 1. Header Banner with Telemetry Status & Date Filter */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-6 rounded-3xl glass-card border border-solar-500/20 bg-gradient-to-r from-midnight-900 via-midnight-850 to-midnight-900 relative overflow-hidden shadow-2xl">
-        <div className="relative z-10">
-          <div className="flex items-center space-x-2 text-solar-400 text-xs font-semibold uppercase tracking-wider mb-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+      <div className="command-hub-banner flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 sm:px-6 sm:py-5 rounded-3xl relative overflow-hidden">
+        <div className="relative z-10 min-w-0 flex-1 pr-0 sm:pr-6">
+          <div className="hub-kicker flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider mb-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 pulse-emerald shrink-0" />
             <span>Telemetry Center • Real-Time Database Metrics</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+          <h1 className="hub-title text-2xl sm:text-3xl font-extrabold tracking-tight">
             SunPower <span className="gradient-solar-text">Command Hub</span>
           </h1>
-          <p className="text-slate-400 text-xs sm:text-sm mt-1 max-w-2xl">
+          <p className="hub-sub text-xs sm:text-sm mt-1.5 max-w-2xl leading-relaxed">
             Live enterprise operations overview across site surveys, technical approvals, equipment serialization, rooftop installations, and warranty coverage.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 relative z-10">
-          {/* Date Filter Selector */}
-          <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-xs">
-            <Calendar className="w-3.5 h-3.5 text-solar-400" />
+        <div className="relative z-10 flex flex-col items-stretch sm:items-end gap-2 shrink-0 w-full sm:w-auto sm:ml-auto">
+          <div className="hub-chip flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs w-full sm:w-auto">
+            <Calendar className="w-3.5 h-3.5 text-solar-500 shrink-0" />
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="bg-transparent text-slate-200 focus:outline-none cursor-pointer"
+              className="hub-date-select bg-transparent focus:outline-none cursor-pointer font-medium w-full"
             >
               <option value="full_year">Full Year 2026</option>
               <option value="h1">H1 2026 (Jan - Jun)</option>
@@ -159,16 +158,15 @@ const AdminDashboard = () => {
             </select>
           </div>
 
-          <div className="text-right px-4 py-2 rounded-xl bg-slate-900/90 border border-emerald-500/30 shadow-inner">
-            <span className="text-[10px] text-slate-400 uppercase font-semibold block">Total Solar Deployed</span>
-            <span className="text-xl font-black font-mono text-emerald-400">
+          <div className="hub-metric text-right px-4 py-2.5 rounded-xl w-full sm:min-w-[168px]">
+            <span className="hub-metric-label text-[10px] uppercase font-semibold tracking-wider block">Total Solar Deployed</span>
+            <span className="hub-metric-value text-xl font-black font-mono">
               {kpis.totalInstalledCapacityKw || 0} kW
             </span>
           </div>
         </div>
 
-        {/* Decorative background sun rays glow */}
-        <div className="absolute -right-16 -top-16 w-64 h-64 bg-solar-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="hub-glow pointer-events-none" />
       </div>
 
       {/* 2. All 10 Required Statistics Cards in a Responsive Grid */}
@@ -337,7 +335,9 @@ const AdminDashboard = () => {
                     label={{ value: 'Amount (₹)', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 10 }}
                   />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '12px' }}
+                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '12px', color: '#ffffff' }}
+                    itemStyle={{ color: '#ffffff' }}
+                    labelStyle={{ color: '#ffffff' }}
                     formatter={(val) => [`₹${Number(val).toLocaleString('en-IN')}`, '']}
                   />
                   <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
@@ -384,7 +384,9 @@ const AdminDashboard = () => {
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '12px' }}
+                      contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '12px', color: '#ffffff' }}
+                      itemStyle={{ color: '#ffffff' }}
+                      labelStyle={{ color: '#ffffff' }}
                       formatter={(val, name, item) => [`${val} Projects (${item.payload.percent}%)`, item.payload.name]}
                     />
                   </PieChart>
@@ -446,7 +448,9 @@ const AdminDashboard = () => {
                     label={{ value: 'Installed Capacity (kW)', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 10 }}
                   />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '12px' }}
+                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '12px', color: '#ffffff' }}
+                    itemStyle={{ color: '#ffffff' }}
+                    labelStyle={{ color: '#ffffff' }}
                     formatter={(val) => [`${val} kW`, 'Installed Capacity']}
                   />
                   <Bar dataKey="capacityKw" name="Installed Capacity (kW)" fill="url(#chartCapGrad)" radius={[6, 6, 0, 0]} />
@@ -483,7 +487,9 @@ const AdminDashboard = () => {
                     label={{ value: 'Number of Tickets', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 10 }}
                   />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '12px' }}
+                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '12px', color: '#ffffff' }}
+                    itemStyle={{ color: '#ffffff' }}
+                    labelStyle={{ color: '#ffffff' }}
                     formatter={(val) => [`${val} Tickets`, 'Count']}
                   />
                   <Bar dataKey="count" name="Tickets" radius={[6, 6, 0, 0]}>
@@ -525,7 +531,9 @@ const AdminDashboard = () => {
                   label={{ value: 'Available Quantity', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 10 }}
                 />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '12px' }}
+                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '12px', color: '#ffffff' }}
+                  itemStyle={{ color: '#ffffff' }}
+                  labelStyle={{ color: '#ffffff' }}
                 />
                 <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
                 <Bar dataKey="availableQty" name="Available Quantity" fill="#06b6d4" radius={[6, 6, 0, 0]} />

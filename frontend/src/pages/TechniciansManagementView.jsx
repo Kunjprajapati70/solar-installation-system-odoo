@@ -82,7 +82,7 @@ const TechniciansManagementView = () => {
             <span>Field Workforce & Dispatch Hub</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-            Certified Solar <span className="gradient-solar-text">Technicians (15)</span>
+            Certified Solar <span className="gradient-solar-text">Technicians </span>
           </h1>
           <p className="text-slate-400 text-xs sm:text-sm mt-0.5">
             15 MNRE certified solar rooftop engineers with workload tracking, skill sets, and customer satisfaction ratings.

@@ -1,23 +1,34 @@
 const Notification = require('../../models/Notification');
 const ApiResponse = require('../utils/apiResponse');
 
+const audienceFilter = (user) => {
+  if (user.role === 'admin') return {};
+  return {
+    $or: [
+      { recipient: user._id },
+      { targetRole: user.role },
+      { targetRole: 'all' }
+    ]
+  };
+};
+
 class NotificationController {
   /**
    * GET /api/notifications
    */
   static async listNotifications(req, res, next) {
     try {
-      const notifications = await Notification.find({
-        $or: [
-          { recipient: req.user._id },
-          { targetRole: req.user.role },
-          { targetRole: 'all' }
-        ]
-      })
-        .sort({ createdAt: -1 })
-        .limit(50);
+      const filter = audienceFilter(req.user);
+      const notifications = await Notification.find(filter).sort({ createdAt: -1 });
+      const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-      return ApiResponse.success(res, notifications);
+      return res.status(200).json({
+        success: true,
+        message: 'Success',
+        data: notifications,
+        count: notifications.length,
+        unreadCount
+      });
     } catch (err) {
       next(err);
     }
@@ -44,19 +55,11 @@ class NotificationController {
 
   /**
    * PUT /api/notifications/read-all
+   * POST /api/notifications/mark-all-read
    */
   static async markAllRead(req, res, next) {
     try {
-      await Notification.updateMany(
-        {
-          $or: [
-            { recipient: req.user._id },
-            { targetRole: req.user.role },
-            { targetRole: 'all' }
-          ]
-        },
-        { isRead: true }
-      );
+      await Notification.updateMany(audienceFilter(req.user), { isRead: true });
       return ApiResponse.success(res, null, 'All notifications marked as read');
     } catch (err) {
       next(err);

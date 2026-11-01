@@ -149,6 +149,15 @@
   background-color: #f1f5f9;
 }
 
+.light .bg-midnight-950,
+.light .bg-midnight-950\/60 {
+  background-color: #f1f5f9;
+}
+
+.light .text-slate-100 {
+  color: #0f172a;
+}
+
 .light .bg-slate-800, .light .bg-slate-800\/80, .light .bg-slate-800\/60 {
   background-color: #e2e8f0;
 }
@@ -183,3 +192,151 @@
   border: 2px dashed #f59e0b;
   box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
 }
+
+/* Command Hub dashboard hero */
+.command-hub-banner {
+  isolation: isolate;
+}
+
+.command-hub-banner::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fbbf24, #f59e0b 55%, #10b981);
+  z-index: 2;
+}
+
+.command-hub-banner .hub-glow {
+  position: absolute;
+  right: -3rem;
+  top: -3.5rem;
+  width: 14rem;
+  height: 14rem;
+  border-radius: 9999px;
+  filter: blur(52px);
+  pointer-events: none;
+}
+
+.dark .command-hub-banner {
+  background: linear-gradient(90deg, #0b1120 0%, #0f172a 52%, #0b1120 100%);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  box-shadow: 0 20px 50px -18px rgba(0, 0, 0, 0.55);
+  padding-left: 1.6rem;
+}
+
+.dark .command-hub-banner .hub-kicker {
+  color: #fbbf24;
+}
+
+.dark .command-hub-banner .hub-title {
+  color: #ffffff;
+}
+
+.dark .command-hub-banner .hub-sub {
+  color: #94a3b8;
+}
+
+.dark .command-hub-banner .hub-chip {
+  background: rgba(2, 6, 23, 0.88);
+  border: 1px solid rgba(51, 65, 85, 0.85);
+  color: #e2e8f0;
+}
+
+.dark .command-hub-banner .hub-date-select {
+  color: #e2e8f0;
+}
+
+.dark .command-hub-banner .hub-date-select option {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.dark .command-hub-banner .hub-metric {
+  background: rgba(2, 6, 23, 0.88);
+  border: 1px solid rgba(16, 185, 129, 0.32);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.dark .command-hub-banner .hub-metric-label {
+  color: #94a3b8;
+}
+
+.dark .command-hub-banner .hub-metric-value {
+  color: #34d399;
+}
+
+.dark .command-hub-banner .hub-glow {
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.light .command-hub-banner {
+  background: #ffffff;
+  border: 1px solid #e8edf4;
+  box-shadow:
+    0 10px 28px -16px rgba(15, 23, 42, 0.18),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
+  padding-left: 1.6rem;
+}
+
+.light .command-hub-banner .hub-kicker {
+  color: #b45309;
+}
+
+.light .command-hub-banner .hub-title {
+  color: #0f172a;
+}
+
+.light .command-hub-banner .hub-sub {
+  color: #64748b;
+}
+
+.light .command-hub-banner .hub-chip {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.light .command-hub-banner .hub-date-select {
+  color: #0f172a;
+}
+
+.light .command-hub-banner .hub-date-select option {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.light .command-hub-banner .hub-metric {
+  background: #ffffff;
+  border: 1px solid #a7f3d0;
+  box-shadow: 0 6px 16px -10px rgba(16, 185, 129, 0.55);
+}
+
+.light .command-hub-banner .hub-metric-label {
+  color: #64748b;
+}
+
+.light .command-hub-banner .hub-metric-value {
+  color: #059669;
+}
+
+.light .command-hub-banner .hub-glow {
+  background: rgba(251, 191, 36, 0.16);
+}
+
+/* Recharts Tooltip Styling */
+.recharts-default-tooltip {
+  color: #ffffff !important;
+}
+
+.recharts-tooltip-item,
+.recharts-tooltip-item-name,
+.recharts-tooltip-item-value,
+.recharts-tooltip-label {
+  color: #ffffff !important;
+}
+

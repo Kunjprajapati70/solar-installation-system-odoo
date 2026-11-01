@@ -27,6 +27,9 @@ export const SocketProvider = ({ children }) => {
 
       newSocket.on('connect', () => {
         console.log('⚡ Connected to SunPower Live Socket.IO');
+        if (user?._id) {
+          newSocket.emit('join-user', user._id);
+        }
         if (user?.role) {
           newSocket.emit('join-role', user.role);
         }

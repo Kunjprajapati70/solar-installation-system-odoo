@@ -12,13 +12,13 @@ export const EmptyState = ({
   className = ''
 }) => {
   return (
-    <div className={`p-8 sm:p-12 text-center rounded-2xl glass-card border border-slate-800 flex flex-col items-center justify-center space-y-4 ${className}`}>
-      <div className={`w-14 h-14 rounded-2xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-center shadow-lg ${iconColor}`}>
+    <div className={`p-8 sm:p-12 text-center rounded-2xl glass-card border border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center space-y-4 ${className}`}>
+      <div className={`w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 flex items-center justify-center shadow-lg ${iconColor}`}>
         <Icon className="w-7 h-7" />
       </div>
       <div className="max-w-md space-y-1">
-        <h3 className="text-base font-bold text-white tracking-tight">{title}</h3>
-        <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">{description}</p>
+        <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">{title}</h3>
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{description}</p>
       </div>
       {actionLabel && onAction && (
         <Button variant="primary" onClick={onAction} className="mt-2 text-xs">
