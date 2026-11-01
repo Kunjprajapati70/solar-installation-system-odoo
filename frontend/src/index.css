@@ -1,0 +1,342 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-solar: #f59e0b;
+    --color-electric: #10b981;
+    --bg-primary: #070b14;
+    --text-primary: #f1f5f9;
+  }
+
+  :root.light {
+    --bg-primary: #f8fafc;
+    --text-primary: #0f172a;
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow-x: hidden;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .dark body {
+    background-color: #070b14;
+    color: #f1f5f9;
+  }
+
+  .light body {
+    background-color: #f8fafc;
+    color: #0f172a;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', 'Inter', sans-serif;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #0b1120;
+}
+.light ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+.light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+.light ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Glassmorphic Layer Utilities */
+.glass-panel {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.dark .glass-panel {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.light .glass-panel {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 2px 10px -2px rgba(0, 0, 0, 0.04);
+}
+
+.glass-card {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .glass-card {
+  background: linear-gradient(135deg, rgba(20, 30, 51, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.light .glass-card {
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  box-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.06);
+}
+
+.glass-card-hover {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark .glass-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(245, 158, 11, 0.3);
+  box-shadow: 0 12px 30px -10px rgba(245, 158, 11, 0.15);
+}
+
+.light .glass-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(245, 158, 11, 0.4);
+  box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.12);
+}
+
+/* Solar Energy Radiant Gradients */
+.gradient-solar-text {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-electric-text {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Light mode text adaptors */
+.light .text-slate-400 {
+  color: #64748b;
+}
+
+.light .text-slate-300 {
+  color: #334155;
+}
+
+.light .text-slate-200, .light .text-white {
+  color: #0f172a;
+}
+
+.light .bg-slate-900, .light .bg-midnight-900 {
+  background-color: #f1f5f9;
+}
+
+.light .bg-midnight-950,
+.light .bg-midnight-950\/60 {
+  background-color: #f1f5f9;
+}
+
+.light .text-slate-100 {
+  color: #0f172a;
+}
+
+.light .bg-slate-800, .light .bg-slate-800\/80, .light .bg-slate-800\/60 {
+  background-color: #e2e8f0;
+}
+
+.light .border-slate-800, .light .border-slate-700, .light .border-slate-800\/80 {
+  border-color: #cbd5e1;
+}
+
+/* Animated status pulse */
+.pulse-emerald {
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* QR Code scanning viewport target overlay */
+.qr-target-overlay {
+  border: 2px dashed #f59e0b;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+}
+
+/* Command Hub dashboard hero */
+.command-hub-banner {
+  isolation: isolate;
+}
+
+.command-hub-banner::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fbbf24, #f59e0b 55%, #10b981);
+  z-index: 2;
+}
+
+.command-hub-banner .hub-glow {
+  position: absolute;
+  right: -3rem;
+  top: -3.5rem;
+  width: 14rem;
+  height: 14rem;
+  border-radius: 9999px;
+  filter: blur(52px);
+  pointer-events: none;
+}
+
+.dark .command-hub-banner {
+  background: linear-gradient(90deg, #0b1120 0%, #0f172a 52%, #0b1120 100%);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  box-shadow: 0 20px 50px -18px rgba(0, 0, 0, 0.55);
+  padding-left: 1.6rem;
+}
+
+.dark .command-hub-banner .hub-kicker {
+  color: #fbbf24;
+}
+
+.dark .command-hub-banner .hub-title {
+  color: #ffffff;
+}
+
+.dark .command-hub-banner .hub-sub {
+  color: #94a3b8;
+}
+
+.dark .command-hub-banner .hub-chip {
+  background: rgba(2, 6, 23, 0.88);
+  border: 1px solid rgba(51, 65, 85, 0.85);
+  color: #e2e8f0;
+}
+
+.dark .command-hub-banner .hub-date-select {
+  color: #e2e8f0;
+}
+
+.dark .command-hub-banner .hub-date-select option {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.dark .command-hub-banner .hub-metric {
+  background: rgba(2, 6, 23, 0.88);
+  border: 1px solid rgba(16, 185, 129, 0.32);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.dark .command-hub-banner .hub-metric-label {
+  color: #94a3b8;
+}
+
+.dark .command-hub-banner .hub-metric-value {
+  color: #34d399;
+}
+
+.dark .command-hub-banner .hub-glow {
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.light .command-hub-banner {
+  background: #ffffff;
+  border: 1px solid #e8edf4;
+  box-shadow:
+    0 10px 28px -16px rgba(15, 23, 42, 0.18),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
+  padding-left: 1.6rem;
+}
+
+.light .command-hub-banner .hub-kicker {
+  color: #b45309;
+}
+
+.light .command-hub-banner .hub-title {
+  color: #0f172a;
+}
+
+.light .command-hub-banner .hub-sub {
+  color: #64748b;
+}
+
+.light .command-hub-banner .hub-chip {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.light .command-hub-banner .hub-date-select {
+  color: #0f172a;
+}
+
+.light .command-hub-banner .hub-date-select option {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.light .command-hub-banner .hub-metric {
+  background: #ffffff;
+  border: 1px solid #a7f3d0;
+  box-shadow: 0 6px 16px -10px rgba(16, 185, 129, 0.55);
+}
+
+.light .command-hub-banner .hub-metric-label {
+  color: #64748b;
+}
+
+.light .command-hub-banner .hub-metric-value {
+  color: #059669;
+}
+
+.light .command-hub-banner .hub-glow {
+  background: rgba(251, 191, 36, 0.16);
+}
+
+/* Recharts Tooltip Styling */
+.recharts-default-tooltip {
+  color: #ffffff !important;
+}
+
+.recharts-tooltip-item,
+.recharts-tooltip-item-name,
+.recharts-tooltip-item-value,
+.recharts-tooltip-label {
+  color: #ffffff !important;
+}
+

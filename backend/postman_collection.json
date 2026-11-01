@@ -1,0 +1,356 @@
+{
+  "info": {
+    "name": "SunPower Solutions - Solar Installation Management API",
+    "description": "Enterprise API Collection for SunPower Solutions. Covers Admin, Technician, and Customer portals with QR code tracking, warranty lifecycle automation, and financial reconciliation.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "techToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "custToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Login - Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@sunpower.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login - Technician",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"tech@sunpower.com\",\n  \"password\": \"tech123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login - Customer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@sunpower.com\",\n  \"password\": \"customer123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/profile", "host": ["{{baseUrl}}"], "path": ["auth", "profile"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Customer Portal",
+      "item": [
+        {
+          "name": "Get Customer Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{custToken}}" }],
+            "url": { "raw": "{{baseUrl}}/customer-portal/profile", "host": ["{{baseUrl}}"], "path": ["customer-portal", "profile"] }
+          }
+        },
+        {
+          "name": "Get Customer Orders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{custToken}}" }],
+            "url": { "raw": "{{baseUrl}}/customer-portal/orders", "host": ["{{baseUrl}}"], "path": ["customer-portal", "orders"] }
+          }
+        },
+        {
+          "name": "Get Customer Warranties",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{custToken}}" }],
+            "url": { "raw": "{{baseUrl}}/customer-portal/warranties", "host": ["{{baseUrl}}"], "path": ["customer-portal", "warranties"] }
+          }
+        },
+        {
+          "name": "Raise Service Complaint Ticket",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{custToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipmentSerialNumber\": \"SN-INV-2026-0001\",\n  \"issueCategory\": \"inverter_fault\",\n  \"priority\": \"medium\",\n  \"title\": \"Grid Sync Warning on Inverter\",\n  \"description\": \"Inverter is displaying error code E04 during peak sunlight hours.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/customer-portal/service-tickets", "host": ["{{baseUrl}}"], "path": ["customer-portal", "service-tickets"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Technician Portal",
+      "item": [
+        {
+          "name": "Get Assigned Jobs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{techToken}}" }],
+            "url": { "raw": "{{baseUrl}}/technicians/me/jobs", "host": ["{{baseUrl}}"], "path": ["technicians", "me", "jobs"] }
+          }
+        },
+        {
+          "name": "Get Working Hours",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{techToken}}" }],
+            "url": { "raw": "{{baseUrl}}/technicians/me/hours", "host": ["{{baseUrl}}"], "path": ["technicians", "me", "hours"] }
+          }
+        },
+        {
+          "name": "Start Installation Job Timer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{techToken}}" }],
+            "url": { "raw": "{{baseUrl}}/installations/{{installationId}}/start", "host": ["{{baseUrl}}"], "path": ["installations", "{{installationId}}", "start"] }
+          }
+        },
+        {
+          "name": "Submit Electrical Quality Testing",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{techToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vocVolts\": 242.5,\n  \"iscAmperes\": 13.6,\n  \"inverterSyncStatus\": \"synced\",\n  \"earthingResistanceOhms\": 1.8,\n  \"generationCheckKw\": 2.85,\n  \"comments\": \"Earthing resistance tested below 2 Ohms. Voc within manufacturer limits.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/installations/{{installationId}}/testing", "host": ["{{baseUrl}}"], "path": ["installations", "{{installationId}}", "testing"] }
+          }
+        },
+        {
+          "name": "Complete Job & Customer Acceptance",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{techToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"signedName\": \"Customer Name\",\n  \"remarks\": \"Rooftop solar system commissioned satisfactorily. Neat cabling.\",\n  \"rating\": 5\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/installations/{{installationId}}/complete", "host": ["{{baseUrl}}"], "path": ["installations", "{{installationId}}", "complete"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Surveys & Quotations",
+      "item": [
+        {
+          "name": "Create Survey",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerName\": \"Aarav Patel\",\n  \"email\": \"aarav@example.com\",\n  \"phone\": \"9876543210\",\n  \"scheduledDate\": \"2026-11-05T10:00:00.000Z\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/surveys", "host": ["{{baseUrl}}"], "path": ["surveys"] }
+          }
+        },
+        {
+          "name": "Approve Survey (Unlocks Quotation)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recommendedCapacityKw\": 5,\n  \"recommendedSystemType\": \"on_grid\",\n  \"approvalNotes\": \"Structural stability verified. RCC roof in excellent condition.\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/surveys/{{surveyId}}/approve", "host": ["{{baseUrl}}"], "path": ["surveys", "{{surveyId}}", "approve"] }
+          }
+        },
+        {
+          "name": "Create Quotation (BOM Server Calculated)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"siteSurveyId\": \"{{surveyId}}\",\n  \"systemCapacityKw\": 5,\n  \"systemType\": \"on_grid\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/quotations", "host": ["{{baseUrl}}"], "path": ["quotations"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Orders & Financials",
+      "item": [
+        {
+          "name": "Create Order from Quotation",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quotationId\": \"{{quotationId}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/orders", "host": ["{{baseUrl}}"], "path": ["orders"] }
+          }
+        },
+        {
+          "name": "Record Payment Transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"amount\": 45000,\n  \"paymentType\": \"advance\",\n  \"paymentMethod\": \"bank_transfer\",\n  \"transactionReference\": \"NEFT-20261031-001\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/transactions", "host": ["{{baseUrl}}"], "path": ["transactions"] }
+          }
+        },
+        {
+          "name": "Finance Summary",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/finance/summary", "host": ["{{baseUrl}}"], "path": ["finance", "summary"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Smart Equipment & Warranty",
+      "item": [
+        {
+          "name": "Lookup Equipment by QR Serial",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/equipment/serial/SN-PANEL-2026-0001", "host": ["{{baseUrl}}"], "path": ["equipment", "serial", "SN-PANEL-2026-0001"] }
+          }
+        },
+        {
+          "name": "Check Warranty Eligibility",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serialNumber\": \"SN-PANEL-2026-0001\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/warranty/check-eligibility", "host": ["{{baseUrl}}"], "path": ["warranty", "check-eligibility"] }
+          }
+        },
+        {
+          "name": "Get Warranty KPI Summary",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/warranty/summary", "host": ["{{baseUrl}}"], "path": ["warranty", "summary"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Real-Time Dashboard & Analytics",
+      "item": [
+        {
+          "name": "Dashboard KPI Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/dashboard/stats", "host": ["{{baseUrl}}"], "path": ["dashboard", "stats"] }
+          }
+        },
+        {
+          "name": "Monthly Revenue vs Expenses (Recharts)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/dashboard/revenue-expenses?year=2026", "host": ["{{baseUrl}}"], "path": ["dashboard", "revenue-expenses"], "query": [{ "key": "year", "value": "2026" }] }
+          }
+        },
+        {
+          "name": "Installation Pipeline Distribution",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/dashboard/installations", "host": ["{{baseUrl}}"], "path": ["dashboard", "installations"] }
+          }
+        },
+        {
+          "name": "Capacity by System Type",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/dashboard/capacity", "host": ["{{baseUrl}}"], "path": ["dashboard", "capacity"] }
+          }
+        },
+        {
+          "name": "Technician Working Hours Report",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/reports/technician-hours", "host": ["{{baseUrl}}"], "path": ["reports", "technician-hours"] }
+          }
+        }
+      ]
+    }
+  ]
+}
