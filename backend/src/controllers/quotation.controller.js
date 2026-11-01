@@ -312,8 +312,6 @@ class QuotationController {
       next(err);
     }
   }
-    }
-  }
 
   /**
    * PUT /api/quotations/:id/status

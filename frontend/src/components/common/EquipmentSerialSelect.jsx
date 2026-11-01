@@ -199,3 +199,4 @@ export const EquipmentSerialSelect = ({
 };
 
 export default EquipmentSerialSelect;
+

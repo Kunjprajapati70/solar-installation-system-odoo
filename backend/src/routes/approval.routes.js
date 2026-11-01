@@ -14,3 +14,4 @@ router.put('/:id/reject', authorize('admin'), ApprovalController.reject);
 router.put('/:id/request-corrections', authorize('admin'), ApprovalController.requestCorrections);
 
 module.exports = router;
+

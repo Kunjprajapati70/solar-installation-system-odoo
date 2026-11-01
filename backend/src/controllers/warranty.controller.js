@@ -99,16 +99,6 @@ class WarrantyController {
       next(err);
     }
   }
-        ...result,
-        serialNumber: result.warranty?.serialNumber || req.params.serialNumber,
-        status: result.status,
-        warranty: result.warranty
-      };
-      return ApiResponse.success(res, responseData, result.message);
-    } catch (err) {
-      next(err);
-    }
-  }
 
   /**
    * GET /api/warranty/summary

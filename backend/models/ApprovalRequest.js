@@ -90,3 +90,4 @@ ApprovalRequestSchema.index({ requestType: 1, status: 1 });
 ApprovalRequestSchema.index({ requestedBy: 1 });
 
 module.exports = mongoose.model('ApprovalRequest', ApprovalRequestSchema);
+

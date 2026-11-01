@@ -200,16 +200,6 @@ class SurveyController {
     }
   }
 
-      if (!survey) {
-        return ApiResponse.notFound(res, 'Site survey not found.');
-      }
-
-      return ApiResponse.success(res, survey);
-    } catch (err) {
-      next(err);
-    }
-  }
-
   /**
    * PUT /api/surveys/:id
    */

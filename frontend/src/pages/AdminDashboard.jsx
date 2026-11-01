@@ -299,51 +299,46 @@ const AdminDashboard = () => {
       <div className="flex border-b border-slate-800 space-x-6 overflow-x-auto text-xs sm:text-sm font-semibold">
         <button
           onClick={() => setActiveTab('all')}
-          className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${
-            activeTab === 'all'
-              ? 'border-solar-500 text-solar-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
+          className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${activeTab === 'all'
+            ? 'border-solar-500 text-solar-400'
+            : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
         >
           All Intelligence Modules
         </button>
         <button
           onClick={() => setActiveTab('business')}
-          className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${
-            activeTab === 'business'
-              ? 'border-solar-500 text-solar-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
+          className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${activeTab === 'business'
+            ? 'border-solar-500 text-solar-400'
+            : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
         >
           Business Telemetry
         </button>
         <button
           onClick={() => setActiveTab('financial')}
-          className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${
-            activeTab === 'financial'
-              ? 'border-solar-500 text-solar-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
+          className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${activeTab === 'financial'
+            ? 'border-solar-500 text-solar-400'
+            : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
         >
           Financial & Demo Revenue
         </button>
         <button
           onClick={() => setActiveTab('operational')}
-          className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${
-            activeTab === 'operational'
-              ? 'border-solar-500 text-solar-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
+          className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${activeTab === 'operational'
+            ? 'border-solar-500 text-solar-400'
+            : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
         >
           Operations & Gating
         </button>
         <button
           onClick={() => setActiveTab('team')}
-          className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${
-            activeTab === 'team'
-              ? 'border-solar-500 text-solar-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
+          className={`pb-3 border-b-2 transition-colors whitespace-nowrap ${activeTab === 'team'
+            ? 'border-solar-500 text-solar-400'
+            : 'border-transparent text-slate-400 hover:text-slate-200'
+            }`}
         >
           Team & Technician Productivity
         </button>
