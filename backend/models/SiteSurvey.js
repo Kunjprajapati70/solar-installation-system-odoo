@@ -80,6 +80,8 @@ const SiteSurveySchema = new mongoose.Schema(
       approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
       approvedAt: Date,
       approvalNotes: String,
+      rejectionReason: String,
+      correctionNotes: String,
       recommendedCapacityKw: Number,
       recommendedSystemType: {
         type: String,

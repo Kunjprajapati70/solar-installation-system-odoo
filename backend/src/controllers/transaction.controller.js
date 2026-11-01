@@ -6,10 +6,22 @@
 const Payment = require('../../models/Payment');
 const Expense = require('../../models/Expense');
 const Order = require('../../models/Order');
+const Customer = require('../../models/Customer');
 const PaymentService = require('../services/payment.service');
 const ApiResponse = require('../utils/apiResponse');
 
 class TransactionController {
+  /**
+   * Helper to resolve customer for authenticated user
+   */
+  static async getCustomerForUser(userId, userEmail) {
+    let customer = await Customer.findOne({ user: userId });
+    if (!customer && userEmail) {
+      customer = await Customer.findOne({ email: userEmail });
+    }
+    return customer;
+  }
+
   /**
    * POST /api/transactions (and /api/payments)
    */
@@ -41,15 +53,73 @@ class TransactionController {
   }
 
   /**
+   * POST /api/transactions/demo (and /api/payments/demo)
+   * Dedicated Demo Payment for Hackathon Demonstration
+   */
+  static async recordDemoPayment(req, res, next) {
+    try {
+      const { orderId, order, amount, paymentMethod = 'demo_upi', demoScenario = 'success', notes = '' } = req.body;
+      const targetOrderId = orderId || order;
+
+      if (!targetOrderId) {
+        return ApiResponse.badRequest(res, 'Target Order ID is required for processing demo payment.');
+      }
+
+      // If called by customer, verify customer ownership of order
+      if (req.user?.role === 'customer') {
+        const customer = await TransactionController.getCustomerForUser(req.user._id, req.user.email);
+        if (!customer) {
+          return ApiResponse.forbidden(res, 'No customer profile linked to your user account.');
+        }
+
+        const ord = await Order.findById(targetOrderId);
+        if (!ord || ord.customer.toString() !== customer._id.toString()) {
+          return ApiResponse.forbidden(res, 'Security Policy: You can only execute demo payments on your own orders.');
+        }
+      }
+
+      const result = await PaymentService.processDemoPayment({
+        orderId: targetOrderId,
+        amount,
+        paymentMethod,
+        demoScenario,
+        notes,
+        userId: req.user?._id,
+        userRole: req.user?.role
+      });
+
+      if (!result.success) {
+        return ApiResponse.badRequest(res, result.message, result.payment);
+      }
+
+      return ApiResponse.created(res, result, result.message);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
    * GET /api/transactions (and /api/payments)
+   * Strictly enforces customer data privacy
    */
   static async listTransactions(req, res, next) {
     try {
-      const { paymentType, status, search, page = 1, limit = 50 } = req.query;
+      const { paymentType, status, isDemo, search, page = 1, limit = 50 } = req.query;
       const query = {};
+
+      // Privacy Check: customer can ONLY see their own transactions
+      if (req.user?.role === 'customer') {
+        const customer = await TransactionController.getCustomerForUser(req.user._id, req.user.email);
+        if (!customer) {
+          return ApiResponse.success(res, [], 'No transactions found', 200, { total: 0, page: 1, limit, pages: 0 });
+        }
+        query.customer = customer._id;
+      }
 
       if (paymentType) query.paymentType = paymentType;
       if (status) query.status = status;
+      if (isDemo !== undefined) query.isDemo = isDemo === 'true';
+
       if (search) {
         query.$or = [
           { receiptNumber: { $regex: search, $options: 'i' } },
@@ -60,7 +130,7 @@ class TransactionController {
       const skip = (Number(page) - 1) * Number(limit);
       const [items, total] = await Promise.all([
         Payment.find(query)
-          .populate('customer')
+          .populate('customer', 'name customerCode email phone')
           .populate('order', 'orderNumber totalAmount balanceAmount paymentStatus')
           .sort({ paidAt: -1 })
           .skip(skip)
@@ -81,6 +151,7 @@ class TransactionController {
 
   /**
    * GET /api/transactions/:id
+   * Strictly enforces customer ownership
    */
   static async getById(req, res, next) {
     try {
@@ -90,6 +161,14 @@ class TransactionController {
 
       if (!payment) {
         return ApiResponse.notFound(res, 'Transaction not found.');
+      }
+
+      // Privacy check
+      if (req.user?.role === 'customer') {
+        const customer = await TransactionController.getCustomerForUser(req.user._id, req.user.email);
+        if (!customer || payment.customer?._id?.toString() !== customer._id.toString()) {
+          return ApiResponse.forbidden(res, 'Security Policy Violation: Access denied to another customer’s transaction record.');
+        }
       }
 
       return ApiResponse.success(res, payment);

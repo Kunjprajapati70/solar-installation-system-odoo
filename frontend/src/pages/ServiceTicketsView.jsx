@@ -17,10 +17,13 @@ import {
   Search,
   User,
   History,
-  X
+  X,
+  Printer
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Pagination from '../components/ui/Pagination';
+import EquipmentSerialSelect from '../components/common/EquipmentSerialSelect';
+import PrintDocumentModal from '../components/common/PrintDocumentModal';
 
 const ServiceTicketsView = () => {
   const { user } = useAuth();
@@ -37,6 +40,7 @@ const ServiceTicketsView = () => {
   const [showResolveModal, setShowResolveModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
 
   const [createForm, setCreateForm] = useState({
@@ -398,19 +402,17 @@ const ServiceTicketsView = () => {
                 </select>
               </div>
 
-              {/* Equipment Serial Number & Live Warranty Check */}
+              {/* Equipment Serial Number & Live Warranty Check via Searchable Serial Component */}
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Equipment Serial Number (Optional)</label>
-                <input
-                  type="text"
+                <label className="block text-slate-300 font-semibold mb-1">Equipment Serial Number (Search or Pick)</label>
+                <EquipmentSerialSelect
                   value={createForm.equipmentSerialNumber}
-                  onChange={(e) => {
-                    const serial = e.target.value;
+                  operation="service"
+                  onChange={(serial) => {
                     setCreateForm({ ...createForm, equipmentSerialNumber: serial });
                     checkSerialWarranty(serial);
                   }}
-                  placeholder="e.g. SN-PANEL-2026-0001 or SN-INV-2026-0002"
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono focus:outline-none focus:border-solar-500"
+                  placeholder="Search and select serialized component..."
                 />
 
                 {warrantyStatusCheck && (
@@ -562,13 +564,31 @@ const ServiceTicketsView = () => {
               </div>
             </div>
 
-            <div className="flex justify-end pt-2 border-t border-slate-800">
+            <div className="flex justify-between items-center pt-2 border-t border-slate-800">
+              <Button
+                variant="outline"
+                size="sm"
+                icon={Printer}
+                onClick={() => setShowPrintModal(true)}
+              >
+                Print Service Report
+              </Button>
               <Button variant="secondary" size="sm" onClick={() => setShowDetailModal(false)}>
                 Close
               </Button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Official Isolated Printable Service Report Modal */}
+      {showPrintModal && selectedTicket && (
+        <PrintDocumentModal
+          isOpen={showPrintModal}
+          documentData={selectedTicket}
+          documentType="service"
+          onClose={() => setShowPrintModal(false)}
+        />
       )}
 
       {/* 6. Resolve & Calculate Charges Modal (Rules 6 & 7) */}

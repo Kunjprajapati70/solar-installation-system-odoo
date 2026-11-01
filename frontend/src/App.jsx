@@ -33,6 +33,8 @@ import FinancialsView from './pages/FinancialsView';
 import SubsidiesView from './pages/SubsidiesView';
 import TechniciansManagementView from './pages/TechniciansManagementView';
 import ReportsView from './pages/ReportsView';
+import AdminReviewCenter from './pages/AdminReviewCenter';
+import UserManagementView from './pages/UserManagementView';
 
 import { Sun } from 'lucide-react';
 
@@ -128,6 +130,8 @@ function App() {
                   <Route path="subsidies" element={<SubsidiesView />} />
                   <Route path="technicians" element={<TechniciansManagementView />} />
                   <Route path="reports" element={<ReportsView />} />
+                  <Route path="approvals" element={<AdminReviewCenter />} />
+                  <Route path="users" element={<UserManagementView />} />
                   
                   {/* Catch-all 404 Route */}
                   <Route path="*" element={<ErrorPage code="404" />} />

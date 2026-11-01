@@ -109,12 +109,33 @@ class SurveyController {
   }
 
   /**
+   * Helper to resolve customer profile from authenticated user
+   */
+  static async getCustomerForUser(userId, userEmail) {
+    let customer = await Customer.findOne({ user: userId });
+    if (!customer && userEmail) {
+      customer = await Customer.findOne({ email: userEmail });
+    }
+    return customer;
+  }
+
+  /**
    * GET /api/surveys
+   * Strictly enforces customer data privacy
    */
   static async listSurveys(req, res, next) {
     try {
       const { status, search, page = 1, limit = 50 } = req.query;
       const query = {};
+
+      // Security check: customer can only see their own surveys
+      if (req.user?.role === 'customer') {
+        const customer = await SurveyController.getCustomerForUser(req.user._id, req.user.email);
+        if (!customer) {
+          return ApiResponse.success(res, [], 'No surveys found', 200, { total: 0, page: 1, limit, pages: 0 });
+        }
+        query.customer = customer._id;
+      }
 
       if (status) query.status = status;
       if (search) {
@@ -150,6 +171,7 @@ class SurveyController {
 
   /**
    * GET /api/surveys/:id
+   * Enforces customer ownership on single record retrieval
    */
   static async getById(req, res, next) {
     try {
@@ -158,6 +180,25 @@ class SurveyController {
         .populate('enquiry')
         .populate('surveyor', 'name email phone')
         .populate('approvalDetails.approvedBy', 'name email');
+
+      if (!survey) {
+        return ApiResponse.notFound(res, 'Site survey not found.');
+      }
+
+      // Security check: if customer, verify ownership
+      if (req.user?.role === 'customer') {
+        const customer = await SurveyController.getCustomerForUser(req.user._id, req.user.email);
+        const surveyCustomerId = survey.customer?._id?.toString() || survey.customer?.toString();
+        if (!customer || surveyCustomerId !== customer._id.toString()) {
+          return ApiResponse.forbidden(res, 'Security Policy Violation: You cannot access another customer’s site survey.');
+        }
+      }
+
+      return ApiResponse.success(res, survey);
+    } catch (err) {
+      next(err);
+    }
+  }
 
       if (!survey) {
         return ApiResponse.notFound(res, 'Site survey not found.');

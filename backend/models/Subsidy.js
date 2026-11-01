@@ -49,10 +49,14 @@ const SubsidySchema = new mongoose.Schema(
         'meter_installation_passed',
         'inspection_completed',
         'subsidy_approved',
+        'rejected',
+        'corrections_requested',
         'disbursed'
       ],
       default: 'application_submitted'
     },
+    rejectionReason: String,
+    correctionNotes: String,
     documents: [
       {
         docType: {

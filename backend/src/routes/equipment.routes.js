@@ -12,6 +12,7 @@ router.get('/lookup/:serialNumber', EquipmentController.getBySerialNumber);
 router.use(protect);
 
 router.get('/', EquipmentController.listEquipment);
+router.get('/dropdown', EquipmentController.getDropdownOptions);
 router.post('/generate', authorize('admin', 'inventory_manager', 'sales'), EquipmentController.generateBatch);
 router.get('/:id', EquipmentController.getById);
 router.get('/:id/qr', EquipmentController.getQrCode);

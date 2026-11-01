@@ -7,6 +7,11 @@ const EnquirySchema = new mongoose.Schema(
       unique: true,
       required: true
     },
+    leadId: {
+      type: String,
+      unique: true,
+      sparse: true
+    },
     customerName: {
       type: String,
       required: true,
@@ -43,19 +48,34 @@ const EnquirySchema = new mongoose.Schema(
       type: Number,
       default: 0
     },
+    leadSource: {
+      type: String,
+      enum: ['website', 'referral', 'cold_call', 'social_media', 'expo', 'partner', 'direct', 'other'],
+      default: 'website'
+    },
     status: {
       type: String,
       enum: [
         'new',
-        'assigned',
-        'survey_scheduled',
+        'contacted',
+        'follow_up_required',
+        'site_survey_scheduled',
+        'survey_scheduled', // Backward compatible
         'survey_completed',
-        'quoted',
+        'quotation_sent',
+        'quoted', // Backward compatible
+        'assigned', // Backward compatible
         'converted',
-        'won',
+        'won', // Backward compatible
+        'rejected',
         'lost'
       ],
       default: 'new'
+    },
+    rejectionReason: String,
+    archived: {
+      type: Boolean,
+      default: false
     },
     assignedSales: {
       type: mongoose.Schema.Types.ObjectId,
@@ -66,9 +86,43 @@ const EnquirySchema = new mongoose.Schema(
       ref: 'Customer'
     },
     notes: String,
+    internalNotes: [
+      {
+        text: String,
+        author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        authorName: String,
+        createdAt: { type: Date, default: Date.now }
+      }
+    ],
+    leadHistory: [
+      {
+        fromStatus: String,
+        toStatus: String,
+        action: String,
+        changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        changedByName: String,
+        changeDate: { type: Date, default: Date.now },
+        notes: String
+      }
+    ],
     followUpDate: Date
   },
   { timestamps: true }
 );
+
+EnquirySchema.pre('validate', function (next) {
+  if (!this.leadId && this.enquiryNumber) {
+    this.leadId = this.enquiryNumber;
+  }
+  if (!this.enquiryNumber && this.leadId) {
+    this.enquiryNumber = this.leadId;
+  }
+  if (!this.enquiryNumber) {
+    const num = `ENQ-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`;
+    this.enquiryNumber = num;
+    this.leadId = num;
+  }
+  next();
+});
 
 module.exports = mongoose.model('Enquiry', EnquirySchema);

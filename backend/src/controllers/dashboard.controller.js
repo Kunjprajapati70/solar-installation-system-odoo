@@ -207,6 +207,19 @@ class DashboardController {
   }
 
   /**
+   * GET /api/dashboard/comprehensive
+   * Unified endpoint powering the 6 Recharts charts and 4 KPI overview cards
+   */
+  static async getComprehensiveAnalytics(req, res, next) {
+    try {
+      const data = await AnalyticsService.getComprehensiveAnalytics(req.query);
+      return ApiResponse.success(res, data, 'Comprehensive analytics data retrieved');
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
    * GET /api/reports/technician-hours
    */
   static async getTechnicianHours(req, res, next) {

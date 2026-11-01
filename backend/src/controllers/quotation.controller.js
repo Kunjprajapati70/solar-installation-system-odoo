@@ -106,12 +106,33 @@ class QuotationController {
   }
 
   /**
+   * Helper to resolve customer profile from authenticated user
+   */
+  static async getCustomerForUser(userId, userEmail) {
+    let customer = await Customer.findOne({ user: userId });
+    if (!customer && userEmail) {
+      customer = await Customer.findOne({ email: userEmail });
+    }
+    return customer;
+  }
+
+  /**
    * GET /api/quotations
+   * Strictly enforces customer data privacy
    */
   static async listQuotations(req, res, next) {
     try {
       const { status, search, page = 1, limit = 50 } = req.query;
       const query = {};
+
+      // Security check: customer can only see their own quotations
+      if (req.user?.role === 'customer') {
+        const customer = await QuotationController.getCustomerForUser(req.user._id, req.user.email);
+        if (!customer) {
+          return ApiResponse.success(res, [], 'No quotations found', 200, { total: 0, page: 1, limit, pages: 0 });
+        }
+        query.customer = customer._id;
+      }
 
       if (status) query.status = status;
       if (search) {
@@ -145,6 +166,7 @@ class QuotationController {
 
   /**
    * GET /api/quotations/:id
+   * Enforces customer ownership on single record retrieval
    */
   static async getById(req, res, next) {
     try {
@@ -155,6 +177,15 @@ class QuotationController {
 
       if (!quotation) {
         return ApiResponse.notFound(res, 'Quotation not found.');
+      }
+
+      // Security check: if customer, verify ownership
+      if (req.user?.role === 'customer') {
+        const customer = await QuotationController.getCustomerForUser(req.user._id, req.user.email);
+        const quoteCustomerId = quotation.customer?._id?.toString() || quotation.customer?.toString();
+        if (!customer || quoteCustomerId !== customer._id.toString()) {
+          return ApiResponse.forbidden(res, 'Security Policy Violation: You cannot access another customer’s quotation.');
+        }
       }
 
       return ApiResponse.success(res, quotation);
@@ -241,17 +272,46 @@ class QuotationController {
    */
   static async rejectQuotation(req, res, next) {
     try {
+      const { rejectionReason, notes } = req.body;
       const quotation = await Quotation.findById(req.params.id);
       if (!quotation) {
         return ApiResponse.notFound(res, 'Quotation not found.');
       }
 
       quotation.status = 'rejected';
+      quotation.rejectionReason = (rejectionReason || notes || 'Quotation rejected by administrator').trim();
       await quotation.save();
 
-      return ApiResponse.success(res, quotation, 'Quotation marked as rejected.');
+      return ApiResponse.success(res, quotation, 'Quotation marked as rejected and rejection reason recorded.');
     } catch (err) {
       next(err);
+    }
+  }
+
+  /**
+   * PUT /api/quotations/:id/request-corrections
+   */
+  static async requestCorrections(req, res, next) {
+    try {
+      const { correctionNotes } = req.body;
+      if (!correctionNotes || !correctionNotes.trim()) {
+        return ApiResponse.badRequest(res, 'Correction notes are required.');
+      }
+
+      const quotation = await Quotation.findById(req.params.id);
+      if (!quotation) {
+        return ApiResponse.notFound(res, 'Quotation not found.');
+      }
+
+      quotation.status = 'corrections_requested';
+      quotation.correctionNotes = correctionNotes.trim();
+      await quotation.save();
+
+      return ApiResponse.success(res, quotation, 'Corrections requested on quotation.');
+    } catch (err) {
+      next(err);
+    }
+  }
     }
   }
 

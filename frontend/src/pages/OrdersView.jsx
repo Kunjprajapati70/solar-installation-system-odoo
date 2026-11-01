@@ -14,11 +14,16 @@ import {
   Eye,
   X,
   Search,
-  Filter
+  Filter,
+  CreditCard,
+  Printer
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import Pagination from '../components/ui/Pagination';
 import Button from '../components/ui/Button';
+import DemoPaymentModal from '../components/common/DemoPaymentModal';
+import PrintDocumentModal from '../components/common/PrintDocumentModal';
+import EquipmentSerialSelect from '../components/common/EquipmentSerialSelect';
 
 const OrdersView = () => {
   const { user } = useAuth();
@@ -36,6 +41,8 @@ const OrdersView = () => {
   const [showDispatchModal, setShowDispatchModal] = useState(false);
   const [dispatchSerials, setDispatchSerials] = useState('');
   const [availableEquipment, setAvailableEquipment] = useState([]);
+  const [paymentModalState, setPaymentModalState] = useState({ isOpen: false, order: null });
+  const [printModalState, setPrintModalState] = useState({ isOpen: false, document: null, type: 'invoice' });
 
   const fetchOrders = async () => {
     try {
@@ -316,6 +323,30 @@ const OrdersView = () => {
                             Confirm Delivery
                           </Button>
                         )}
+
+                        {/* Print Invoice */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          icon={Printer}
+                          onClick={() => setPrintModalState({ isOpen: true, document: order, type: 'invoice' })}
+                          title="Print official GST tax invoice"
+                        >
+                          Invoice
+                        </Button>
+
+                        {/* Demo Payment */}
+                        {order.balanceAmount > 0 && (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            icon={CreditCard}
+                            onClick={() => setPaymentModalState({ isOpen: true, order })}
+                            title="Process simulated payment (Non-bank transaction)"
+                          >
+                            Demo Pay
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   );
@@ -464,6 +495,28 @@ const OrdersView = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Demo Payment Modal */}
+      {paymentModalState.isOpen && (
+        <DemoPaymentModal
+          isOpen={paymentModalState.isOpen}
+          order={paymentModalState.order}
+          onClose={() => setPaymentModalState({ isOpen: false, order: null })}
+          onPaymentSuccess={() => {
+            fetchOrders();
+          }}
+        />
+      )}
+
+      {/* Printable Invoice Modal */}
+      {printModalState.isOpen && (
+        <PrintDocumentModal
+          isOpen={printModalState.isOpen}
+          documentData={printModalState.document}
+          documentType={printModalState.type}
+          onClose={() => setPrintModalState({ isOpen: false, document: null, type: 'invoice' })}
+        />
       )}
     </div>
   );

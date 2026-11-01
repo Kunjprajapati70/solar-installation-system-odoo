@@ -15,5 +15,7 @@ router.post('/logout', AuthController.logout);
 router.get('/profile', protect, AuthController.getProfile);
 router.get('/me', protect, AuthController.getProfile);
 router.put('/profile', protect, AuthController.updateProfile);
+router.post('/change-first-password', protect, AuthController.changeFirstPassword);
+router.post('/change-password', protect, AuthController.changeFirstPassword);
 
 module.exports = router;

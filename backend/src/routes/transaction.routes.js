@@ -9,5 +9,6 @@ router.use(protect);
 router.get('/', TransactionController.listTransactions);
 router.get('/:id', TransactionController.getById);
 router.post('/', authorize('admin', 'sales'), TransactionController.recordTransaction);
+router.post('/demo', authorize('admin', 'sales', 'customer'), TransactionController.recordDemoPayment);
 
 module.exports = router;

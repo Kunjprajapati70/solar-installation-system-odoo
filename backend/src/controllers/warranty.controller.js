@@ -3,17 +3,39 @@
  */
 
 const Warranty = require('../../models/Warranty');
+const Customer = require('../../models/Customer');
 const WarrantyService = require('../services/warranty.service');
 const ApiResponse = require('../utils/apiResponse');
 
 class WarrantyController {
   /**
+   * Helper to resolve customer profile from authenticated user
+   */
+  static async getCustomerForUser(userId, userEmail) {
+    let customer = await Customer.findOne({ user: userId });
+    if (!customer && userEmail) {
+      customer = await Customer.findOne({ email: userEmail });
+    }
+    return customer;
+  }
+
+  /**
    * GET /api/warranty (and /api/warranties)
+   * Strictly enforces customer data privacy
    */
   static async listWarranties(req, res, next) {
     try {
       const { search, category, status, page = 1, limit = 50 } = req.query;
       const query = {};
+
+      // Security check: customer can only see their own warranties
+      if (req.user?.role === 'customer') {
+        const customer = await WarrantyController.getCustomerForUser(req.user._id, req.user.email);
+        if (!customer) {
+          return ApiResponse.success(res, [], 'No warranties found', 200, { total: 0, page: 1, limit, pages: 0 });
+        }
+        query.customer = customer._id;
+      }
 
       if (category) query.category = category;
       if (status) query.status = status;
@@ -56,7 +78,27 @@ class WarrantyController {
       if (!result.warranty) {
         return ApiResponse.notFound(res, result.message);
       }
+
+      // Security check: if customer, verify ownership of equipment warranty
+      if (req.user?.role === 'customer') {
+        const customer = await WarrantyController.getCustomerForUser(req.user._id, req.user.email);
+        const wCustId = result.warranty?.customer?._id?.toString() || result.warranty?.customer?.toString();
+        if (!customer || wCustId !== customer._id.toString()) {
+          return ApiResponse.forbidden(res, 'Security Policy Violation: You cannot access warranty records of another customer.');
+        }
+      }
+
       const responseData = {
+        ...result,
+        serialNumber: result.warranty?.serialNumber || req.params.serialNumber,
+        status: result.status,
+        warranty: result.warranty
+      };
+      return ApiResponse.success(res, responseData, result.message);
+    } catch (err) {
+      next(err);
+    }
+  }
         ...result,
         serialNumber: result.warranty?.serialNumber || req.params.serialNumber,
         status: result.status,
