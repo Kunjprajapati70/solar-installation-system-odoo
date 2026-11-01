@@ -8,6 +8,7 @@ const crypto = require('crypto');
 const User = require('../../models/User');
 const Customer = require('../../models/Customer');
 const ApiResponse = require('../utils/apiResponse');
+const { smtpConfigured, sendPasswordResetOtp } = require('../services/mail.service');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'sunpower_super_secret_jwt_key_2026', {
@@ -279,12 +280,16 @@ class AuthController {
       const userPayload = {
         _id: user._id,
         id: user._id,
+        userId: user.userId,
         name: user.name,
         email: user.email,
         role: user.role,
+        department: user.department,
         phone: user.phone,
         avatar: user.avatar,
         address: user.address,
+        mustChangePassword: Boolean(user.mustChangePassword),
+        status: user.status,
         technicianDetails: user.technicianDetails,
         customerProfile
       };
@@ -345,18 +350,33 @@ class AuthController {
         return ApiResponse.badRequest(res, 'Please provide an email address.');
       }
 
+      const genericMessage = 'If an account exists with this email, a 6-digit verification code has been sent.';
       const user = await User.findOne({ email: email.toLowerCase().trim() });
       if (!user) {
-        // Return success message to prevent user enumeration attacks
-        return ApiResponse.success(res, null, 'If an account exists with this email, a reset token has been dispatched.');
+        return ApiResponse.success(res, { smtpConfigured: smtpConfigured() }, genericMessage);
       }
 
-      // Generate reset token
-      const resetToken = crypto.randomBytes(20).toString('hex');
-      // In production with email infrastructure: send email with reset link
-      console.log(`[Password Reset Token for ${user.email}]: ${resetToken}`);
+      const otp = String(crypto.randomInt(100000, 1000000));
+      user.passwordResetOtpHash = crypto.createHash('sha256').update(otp).digest('hex');
+      user.passwordResetOtpExpires = new Date(Date.now() + 10 * 60 * 1000);
+      user.passwordResetOtpAttempts = 0;
+      await user.save();
 
-      return ApiResponse.success(res, { resetToken }, 'Password reset instructions have been dispatched.');
+      const mail = await sendPasswordResetOtp({ to: user.email, name: user.name, otp });
+      const payload = {
+        email: user.email,
+        smtpConfigured: smtpConfigured(),
+        delivered: Boolean(mail && mail.delivered)
+      };
+      if (!mail?.delivered || process.env.NODE_ENV !== 'production') {
+        payload.devOtp = otp;
+        payload.devHint = mail?.delivered
+          ? 'Email dispatched via SMTP. OTP also attached for development ease.'
+          : 'SMTP server is not reachable or unconfigured. Use this OTP directly.';
+        console.log(`[PASSWORD RESET OTP for ${user.email}]: ${otp}`);
+      }
+
+      return ApiResponse.success(res, payload, genericMessage);
     } catch (err) {
       next(err);
     }
@@ -367,19 +387,44 @@ class AuthController {
    */
   static async resetPassword(req, res, next) {
     try {
-      const { email, password, newPassword } = req.body;
+      const { email, otp, code, password, newPassword } = req.body;
       const pwd = newPassword || password;
+      const otpCode = String(otp || code || '').trim();
 
-      if (!email || !pwd) {
-        return ApiResponse.badRequest(res, 'Please provide email and new password.');
+      if (!email || !pwd || !otpCode) {
+        return ApiResponse.badRequest(res, 'Email, 6-digit OTP, and new password are required.');
+      }
+      if (pwd.length < 6) {
+        return ApiResponse.badRequest(res, 'Password must be at least 6 characters.');
       }
 
-      const user = await User.findOne({ email: email.toLowerCase().trim() });
-      if (!user) {
-        return ApiResponse.notFound(res, 'User account not found.');
+      const user = await User.findOne({ email: email.toLowerCase().trim() }).select('+passwordResetOtpHash');
+      if (!user || !user.passwordResetOtpHash || !user.passwordResetOtpExpires) {
+        return ApiResponse.badRequest(res, 'No active reset code found. Request a new OTP.');
+      }
+      if (user.passwordResetOtpExpires.getTime() < Date.now()) {
+        return ApiResponse.badRequest(res, 'This OTP has expired. Request a new code.');
+      }
+      if ((user.passwordResetOtpAttempts || 0) >= 5) {
+        return ApiResponse.badRequest(res, 'Too many incorrect attempts. Request a new OTP.');
       }
 
-      user.password = pwd; // Automatically hashed by bcrypt pre-save hook
+      const incomingHash = crypto.createHash('sha256').update(otpCode).digest('hex');
+      const stored = Buffer.from(user.passwordResetOtpHash, 'hex');
+      const incoming = Buffer.from(incomingHash, 'hex');
+      const matches = stored.length === incoming.length && crypto.timingSafeEqual(stored, incoming);
+
+      if (!matches) {
+        user.passwordResetOtpAttempts = (user.passwordResetOtpAttempts || 0) + 1;
+        await user.save();
+        return ApiResponse.badRequest(res, 'Invalid verification code.');
+      }
+
+      user.password = pwd;
+      user.mustChangePassword = false;
+      user.passwordResetOtpHash = undefined;
+      user.passwordResetOtpExpires = undefined;
+      user.passwordResetOtpAttempts = 0;
       await user.save();
 
       return ApiResponse.success(res, null, 'Password has been reset successfully. You can now log in.');

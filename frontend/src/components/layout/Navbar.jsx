@@ -62,7 +62,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen, isCollapsed, toggleCollapse }) =
 
   const fetchNotifications = async () => {
     try {
-      const res = await api.get('/notifications');
+      const res = await api.get('/notifications', { params: { limit: 500 } });
       if (res.success) applyNotificationPayload(res);
     } catch (err) {
       console.error('Failed to load notifications:', err);
@@ -141,7 +141,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen, isCollapsed, toggleCollapse }) =
   };
 
   return (
-    <nav className="glass-panel sticky top-0 z-20 border-b border-slate-200 dark:border-slate-800/80 px-4 py-3 transition-colors duration-200">
+    <nav id="navbar" className="no-print glass-panel sticky top-0 z-20 border-b border-slate-200 dark:border-slate-800/80 px-4 py-3 transition-colors duration-200">
       <div className="flex items-center justify-between gap-3">
         {/* Left: Mobile Drawer Button & Brand (Mobile only), Status Indicator (Desktop) */}
         <div className="flex items-center space-x-3 min-w-0">
@@ -244,7 +244,7 @@ const Navbar = ({ toggleSidebar, isSidebarOpen, isCollapsed, toggleCollapse }) =
                   )}
                 </div>
 
-                <div className="max-h-[28rem] overflow-y-auto">
+                <div className="max-h-[70vh] overflow-y-auto">
                   {notifications.length === 0 ? (
                     <div className="p-8 text-center">
                       <Bell className="w-8 h-8 text-slate-400 dark:text-slate-600 mx-auto mb-2" />

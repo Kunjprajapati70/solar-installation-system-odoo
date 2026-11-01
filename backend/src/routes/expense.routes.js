@@ -6,7 +6,7 @@ const { authorize } = require('../middleware/role.middleware');
 
 router.use(protect);
 
-router.get('/', TransactionController.listExpenses);
-router.post('/', authorize('admin', 'sales'), TransactionController.recordExpense);
+router.get('/', authorize('admin'), TransactionController.listExpenses);
+router.post('/', authorize('admin'), TransactionController.recordExpense);
 
 module.exports = router;

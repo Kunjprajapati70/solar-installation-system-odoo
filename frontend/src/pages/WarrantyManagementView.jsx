@@ -19,6 +19,7 @@ import {
 import Button from '../components/ui/Button';
 import Pagination from '../components/ui/Pagination';
 import PrintDocumentModal from '../components/common/PrintDocumentModal';
+import EquipmentSerialSelect from '../components/common/EquipmentSerialSelect';
 
 const WarrantyManagementView = () => {
   const { showToast } = useToast();
@@ -165,15 +166,14 @@ const WarrantyManagementView = () => {
 
       {/* Serial Number Lookup Box */}
       <div className="p-4 rounded-xl glass-card space-y-3">
-        <form onSubmit={handleLookup} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          <div className="flex-1 relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Instant Serial Number Warranty Check (e.g. SP-INV-2026-00001)..."
+        <form onSubmit={handleLookup} className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2">
+          <div className="flex-1">
+            <EquipmentSerialSelect
+              operation="warranty"
               value={searchSerial}
-              onChange={(e) => setSearchSerial(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white uppercase font-mono"
+              onChange={setSearchSerial}
+              label="Warranty serial lookup"
+              placeholder="Search installed serial, brand, or model..."
             />
           </div>
           <Button

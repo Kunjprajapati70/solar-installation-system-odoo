@@ -23,24 +23,22 @@ class QuotationController {
       let survey = null;
       let targetCustomerId = customerId;
 
-      if (siteSurveyId) {
-        survey = await SiteSurvey.findById(siteSurveyId);
-        if (survey) {
-          if (survey.status !== SURVEY_STATUS.APPROVED && !survey.approvalDetails?.isApproved) {
-            return ApiResponse.badRequest(
-              res,
-              `Business Rule Violation: Quotation cannot be generated because Site Survey #${survey.surveyNumber} is '${survey.status}'. A survey must be officially approved by admin/engineer first.`
-            );
-          }
-          if (!targetCustomerId) {
-            targetCustomerId = survey.customer;
-          }
-        }
+      if (!siteSurveyId) {
+        return ApiResponse.badRequest(res, 'An approved site survey is required before a quotation can be created.');
       }
 
+      survey = await SiteSurvey.findById(siteSurveyId);
+      if (!survey) {
+        return ApiResponse.notFound(res, 'Site survey not found.');
+      }
+      if (survey.status !== SURVEY_STATUS.APPROVED && !survey.approvalDetails?.isApproved) {
+        return ApiResponse.badRequest(
+          res,
+          `Business Rule Violation: Quotation cannot be generated because Site Survey #${survey.surveyNumber} is '${survey.status}'. A survey must be officially approved first.`
+        );
+      }
       if (!targetCustomerId) {
-        const anyCust = await Customer.findOne();
-        if (anyCust) targetCustomerId = anyCust._id;
+        targetCustomerId = survey.customer;
       }
 
       if (!targetCustomerId) {

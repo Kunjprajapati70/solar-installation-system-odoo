@@ -20,7 +20,7 @@ const NotificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['info', 'success', 'warning', 'danger'],
+      enum: ['info', 'success', 'warning', 'danger', 'approval_request', 'approval_status', 'credentials'],
       default: 'info'
     },
     link: String,

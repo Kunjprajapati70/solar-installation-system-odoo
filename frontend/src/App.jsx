@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { SocketProvider } from './context/SocketContext';
@@ -37,6 +37,7 @@ import AdminReviewCenter from './pages/AdminReviewCenter';
 import UserManagementView from './pages/UserManagementView';
 
 import { Sun } from 'lucide-react';
+import { canAccessRoute, homePathForRole } from './config/permissions';
 
 // Route Guards
 const ProtectedRoute = ({ children }) => {
@@ -58,6 +59,15 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
+  return children;
+};
+
+const RoleRoute = ({ children }) => {
+  const { user } = useAuth();
+  const location = useLocation();
+  if (!canAccessRoute(user?.role, location.pathname)) {
+    return <Navigate to={homePathForRole(user?.role)} replace />;
+  }
   return children;
 };
 
@@ -108,7 +118,9 @@ function App() {
                   path="/"
                   element={
                     <ProtectedRoute>
-                      <Layout />
+                      <RoleRoute>
+                        <Layout />
+                      </RoleRoute>
                     </ProtectedRoute>
                   }
                 >

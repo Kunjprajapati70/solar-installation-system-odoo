@@ -28,7 +28,7 @@ export const Breadcrumbs = () => {
 
   if (pathnames.length === 0) {
     return (
-      <div className="flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 mb-4">
+      <div className="no-print flex items-center space-x-2 text-xs text-slate-500 dark:text-slate-400 mb-4">
         <Home className="w-3.5 h-3.5 text-solar-500 dark:text-solar-400" />
         <span className="text-slate-800 dark:text-slate-200 font-medium">Dashboard Overview</span>
       </div>
@@ -36,7 +36,7 @@ export const Breadcrumbs = () => {
   }
 
   return (
-    <nav className="flex items-center space-x-1.5 text-xs text-slate-500 dark:text-slate-400 mb-4" aria-label="Breadcrumb">
+    <nav className="no-print flex items-center space-x-1.5 text-xs text-slate-500 dark:text-slate-400 mb-4" aria-label="Breadcrumb">
       <Link to="/" className="flex items-center space-x-1 hover:text-solar-600 dark:hover:text-solar-400 transition">
         <Home className="w-3.5 h-3.5" />
         <span>Dashboard</span>

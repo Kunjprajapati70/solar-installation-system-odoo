@@ -204,6 +204,14 @@ class EquipmentController {
         return ApiResponse.notFound(res, 'Equipment unit not found.');
       }
 
+      if (req.user?.role === 'customer') {
+        const customer = await EquipmentController.getCustomerForUser(req.user._id, req.user.email);
+        const ownerId = equipment.installedAtCustomer?._id?.toString() || equipment.installedAtCustomer?.toString();
+        if (!customer || ownerId !== customer._id.toString()) {
+          return ApiResponse.forbidden(res, 'Access denied: You cannot view another customer’s equipment.');
+        }
+      }
+
       return ApiResponse.success(res, equipment);
     } catch (err) {
       next(err);

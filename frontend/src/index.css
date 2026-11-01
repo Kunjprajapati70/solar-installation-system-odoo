@@ -145,6 +145,11 @@
   color: #0f172a;
 }
 
+.light .chart-tooltip,
+.light .chart-tooltip * {
+  color: #ffffff !important;
+}
+
 .light .bg-slate-900, .light .bg-midnight-900 {
   background-color: #f1f5f9;
 }
@@ -329,6 +334,8 @@
 }
 
 /* Recharts Tooltip Enterprise Styling - Force Crisp White Visibility */
+.chart-tooltip,
+.chart-tooltip *,
 .recharts-default-tooltip,
 .recharts-default-tooltip *,
 .recharts-tooltip-wrapper,
@@ -342,95 +349,182 @@
   fill: #ffffff !important;
 }
 
+.chart-tooltip,
 .recharts-default-tooltip {
   background-color: #0f172a !important;
   border: 1px solid #334155 !important;
-  border-radius: 0.5rem !important;
+  border-radius: 0.75rem !important;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
 }
 
+.print-only {
+  display: none !important;
+}
+
+.print-preview-scroll {
+  min-height: 0;
+}
+
+.printable-document-container {
+  height: auto;
+  overflow: visible;
+}
+
 /* ===================================================
-   ENTERPRISE PRINT STYLES - ISOLATED DOCUMENT PRINTING
+   ENTERPRISE PRINT STYLES
    =================================================== */
 @media print {
-  /* Hide the rest of the application interface */
-  body {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+
+  html, body {
     background: #ffffff !important;
     color: #0f172a !important;
     margin: 0 !important;
     padding: 0 !important;
-    font-size: 11pt !important;
   }
 
-  /* Universal hide for non-printable page fixtures */
+  body.printing-active * {
+    visibility: hidden !important;
+  }
+
+  body.printing-active #printable-document,
+  body.printing-active .printable-document-container,
+  body.printing-active #printable-document *,
+  body.printing-active .printable-document-container * {
+    visibility: visible !important;
+  }
+
+  body.printing-active #printable-document,
+  body.printing-active .printable-document-container {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+  }
+
+  main {
+    padding: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    box-shadow: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
   nav,
   aside,
-  header,
   footer,
   button,
   .no-print,
   .demo-role-bar,
   #sidebar,
   #navbar,
-  .toast-container,
-  .action-buttons,
-  .floating-pill {
+  .toast-container {
     display: none !important;
-    visibility: hidden !important;
   }
 
-  /* When an isolated printable container is active, hide everything outside it */
-  body.printing-active * {
-    visibility: hidden;
-  }
-
-  body.printing-active #printable-document,
-  body.printing-active #printable-document *,
-  body.printing-active .printable-document-container,
-  body.printing-active .printable-document-container * {
-    visibility: visible;
+  .print-modal-shell,
+  .print-modal-shell > div,
+  .print-preview-scroll {
+    position: static !important;
+    inset: auto !important;
+    display: block !important;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
   }
 
   #printable-document,
   .printable-document-container {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
     width: 100% !important;
+    max-width: 100% !important;
     margin: 0 !important;
-    padding: 24px !important;
+    padding: 0 !important;
     background: #ffffff !important;
     color: #0f172a !important;
     box-shadow: none !important;
     border: none !important;
-    page-break-after: avoid;
-    z-index: 999999 !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
   }
 
-  .print-page-break {
-    page-break-before: always;
+  .print-report-root,
+  .print-report-root table,
+  .print-report-root th,
+  .print-report-root td,
+  .print-report-root h1,
+  .print-report-root h2,
+  .print-report-root span,
+  .print-report-root p {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
   }
 
-  table {
-    page-break-inside: avoid;
+  .print-report-root table {
     width: 100% !important;
     border-collapse: collapse !important;
   }
 
-  th, td {
-    border-color: #cbd5e1 !important;
+  .print-report-root th,
+  .print-report-root td {
+    border: 1px solid #cbd5e1 !important;
+    padding: 6px 8px !important;
+    font-size: 10pt !important;
+  }
+
+  .print-report-root thead th {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
+  }
+
+  .print-report-root .gradient-solar-text {
+    background: none !important;
+    -webkit-text-fill-color: #0f172a !important;
     color: #0f172a !important;
   }
 
-  /* Ensure colors and text are high-contrast black/grey on white */
-  * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+  .print-report-root .glass-card,
+  .print-report-root .overflow-x-auto,
+  .print-report-root .overflow-hidden {
+    overflow: visible !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
   }
 
-  @page {
-    size: A4;
-    margin: 12mm 15mm 15mm 15mm;
+  .warranty-sheet,
+  .warranty-sheet * {
+    color: #0f172a !important;
+  }
+
+  table {
+    page-break-inside: auto;
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  tr, .avoid-break {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }
 

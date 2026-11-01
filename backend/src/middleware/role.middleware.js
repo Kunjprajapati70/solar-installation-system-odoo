@@ -1,4 +1,5 @@
 const ApiResponse = require('../utils/apiResponse');
+const { hasPermission } = require('../config/permissions');
 
 /**
  * Authorize specified roles
@@ -21,4 +22,20 @@ const authorize = (...roles) => {
   };
 };
 
-module.exports = { authorize };
+/**
+ * Authorize by centralized permission key
+ * Usage: requirePermission('finance.read')
+ */
+const requirePermission = (permission) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return ApiResponse.unauthorized(res, 'Authentication required.');
+    }
+    if (!hasPermission(req.user.role, permission)) {
+      return ApiResponse.forbidden(res, `Access denied. Missing permission: ${permission}.`);
+    }
+    next();
+  };
+};
+
+module.exports = { authorize, requirePermission };

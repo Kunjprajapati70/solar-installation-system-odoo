@@ -6,6 +6,7 @@ const audienceFilter = (user) => {
   return {
     $or: [
       { recipient: user._id },
+      { recipient: user.id },
       { targetRole: user.role },
       { targetRole: 'all' }
     ]
@@ -19,8 +20,13 @@ class NotificationController {
   static async listNotifications(req, res, next) {
     try {
       const filter = audienceFilter(req.user);
-      const notifications = await Notification.find(filter).sort({ createdAt: -1 });
-      const unreadCount = notifications.filter((n) => !n.isRead).length;
+      const requestedLimit = Number(req.query.limit);
+      const query = Notification.find(filter).sort({ createdAt: -1, _id: -1 });
+      if (Number.isFinite(requestedLimit) && requestedLimit > 0) {
+        query.limit(requestedLimit);
+      }
+      const notifications = await query.lean();
+      const unreadCount = await Notification.countDocuments({ ...filter, isRead: false });
 
       return res.status(200).json({
         success: true,

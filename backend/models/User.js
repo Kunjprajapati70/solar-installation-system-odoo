@@ -66,6 +66,15 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+    passwordResetOtpHash: {
+      type: String,
+      select: false
+    },
+    passwordResetOtpExpires: Date,
+    passwordResetOtpAttempts: {
+      type: Number,
+      default: 0
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'

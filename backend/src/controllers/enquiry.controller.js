@@ -3,6 +3,7 @@ const Customer = require('../../models/Customer');
 const SiteSurvey = require('../../models/SiteSurvey');
 const User = require('../../models/User');
 const ApiResponse = require('../utils/apiResponse');
+const { LEAD_STATUS_TRANSITIONS } = require('../config/permissions');
 
 class EnquiryController {
   /**
@@ -171,6 +172,10 @@ class EnquiryController {
       if (!lead) return ApiResponse.notFound(res, 'Lead not found.');
 
       const fromStatus = lead.status;
+      const allowed = LEAD_STATUS_TRANSITIONS[fromStatus];
+      if (Array.isArray(allowed) && allowed.length > 0 && !allowed.includes(status) && req.user.role !== 'admin') {
+        return ApiResponse.badRequest(res, `Invalid lead status transition from '${fromStatus}' to '${status}'.`);
+      }
       lead.status = status;
       if (rejectionReason) lead.rejectionReason = rejectionReason;
       if (notes) lead.notes = notes;

@@ -41,7 +41,8 @@ const PaymentSchema = new mongoose.Schema(
     },
     transactionReference: {
       type: String,
-      required: true
+      required: true,
+      unique: true
     },
     status: {
       type: String,

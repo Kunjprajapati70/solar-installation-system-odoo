@@ -8,6 +8,7 @@ const Order = require('../../models/Order');
 const InstallationService = require('../services/installation.service');
 const ApiResponse = require('../utils/apiResponse');
 const { INSTALLATION_STATUS } = require('../config/constants');
+const { resolveOwnedCustomer } = require('../utils/customerScope');
 
 class InstallationController {
   /**
@@ -19,16 +20,20 @@ class InstallationController {
       const query = {};
 
       if (status) query.status = status;
-      if (search) {
-        query.$or = [{ installationNumber: { $regex: search, $options: 'i' } }];
-      }
 
-      // If technician, filter by assignment
       if (req.user.role === 'technician') {
         query.$or = [
           { leadTechnician: req.user._id },
           { assistingTechnicians: req.user._id }
         ];
+      } else if (req.user.role === 'customer') {
+        const owned = await resolveOwnedCustomer(req.user);
+        if (!owned) {
+          return ApiResponse.success(res, [], 'Installations retrieved', 200, { total: 0, page: 1, limit: Number(limit), pages: 0 });
+        }
+        query.customer = owned._id;
+      } else if (search) {
+        query.$or = [{ installationNumber: { $regex: search, $options: 'i' } }];
       }
 
       const skip = (Number(page) - 1) * Number(limit);
@@ -68,6 +73,22 @@ class InstallationController {
 
       if (!installation) {
         return ApiResponse.notFound(res, 'Installation job not found.');
+      }
+
+      if (req.user.role === 'technician') {
+        const isLead = installation.leadTechnician?._id?.toString() === req.user._id.toString() || installation.leadTechnician?.toString() === req.user._id.toString();
+        const isAssistant = (installation.assistingTechnicians || []).some((tech) => (tech._id || tech).toString() === req.user._id.toString());
+        if (!isLead && !isAssistant) {
+          return ApiResponse.forbidden(res, 'Access denied: You are not assigned to this installation job.');
+        }
+      }
+
+      if (req.user.role === 'customer') {
+        const owned = await resolveOwnedCustomer(req.user);
+        const custId = installation.customer?._id?.toString() || installation.customer?.toString();
+        if (!owned || custId !== owned._id.toString()) {
+          return ApiResponse.forbidden(res, 'Access denied: You cannot view another customer’s installation.');
+        }
       }
 
       return ApiResponse.success(res, installation);

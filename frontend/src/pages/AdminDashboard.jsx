@@ -47,9 +47,12 @@ import { FALLBACK_DASHBOARD } from '../data/demoSession';
 const DarkChartTooltip = ({ active, payload, label, unit = '', prefix = '' }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-900/95 border border-slate-700 p-3 rounded-2xl shadow-2xl backdrop-blur-md text-xs min-w-[150px] z-50">
+      <div
+        className="chart-tooltip p-3 rounded-2xl text-xs min-w-[160px] z-50"
+        style={{ background: '#0f172a', border: '1px solid #334155', color: '#ffffff' }}
+      >
         {label && (
-          <p className="font-bold text-white mb-1.5 pb-1 border-b border-slate-800 text-[11px] uppercase tracking-wider">
+          <p className="font-bold mb-1.5 pb-1 text-[11px] uppercase tracking-wider" style={{ color: '#ffffff', borderBottom: '1px solid #334155' }}>
             {label}
           </p>
         )}
@@ -59,15 +62,15 @@ const DarkChartTooltip = ({ active, payload, label, unit = '', prefix = '' }) =>
             const displayVal = typeof val === 'number' ? val.toLocaleString('en-IN') : val;
             const name = item.name || item.dataKey || item.payload?.name || item.payload?.status || item.payload?.label || 'Value';
             return (
-              <div key={idx} className="flex items-center justify-between space-x-3">
+              <div key={idx} className="flex items-center justify-between space-x-3" style={{ color: '#ffffff' }}>
                 <div className="flex items-center space-x-1.5">
                   <span
                     className="w-2.5 h-2.5 rounded-full shrink-0"
                     style={{ backgroundColor: item.color || item.fill || '#10b981' }}
                   />
-                  <span className="text-slate-200 font-medium">{name}:</span>
+                  <span className="font-medium" style={{ color: '#ffffff' }}>{name}:</span>
                 </div>
-                <span className="font-bold text-white font-mono">
+                <span className="font-bold font-mono" style={{ color: '#ffffff' }}>
                   {prefix}{displayVal} {unit}
                   {item.payload?.percent !== undefined ? ` (${item.payload.percent}%)` : ''}
                 </span>
@@ -135,55 +138,47 @@ const AdminDashboard = () => {
 
   // Extract structured modules from comprehensive analytics or fallback
   const business = data?.businessOverview || {
-    totalLeads: 252,
-    newLeads: 42,
-    convertedLeads: 85,
-    totalCustomers: 253,
-    totalEmployees: 24,
-    totalTechnicians: 32,
-    totalProjects: 182,
-    completedInstallations: 122,
-    pendingInstallations: 40,
-    installedCapacityKw: 999
+    totalLeads: 0,
+    newLeads: 0,
+    convertedLeads: 0,
+    totalCustomers: 0,
+    totalEmployees: 0,
+    totalTechnicians: 0,
+    totalProjects: 0,
+    completedInstallations: 0,
+    pendingInstallations: 0,
+    installedCapacityKw: 0
   };
 
   const financial = data?.financialOverview || {
-    totalConfirmedRevenue: 28750000,
-    totalExpenses: 2158000,
-    estimatedProfit: 26592000,
-    pendingPayments: 16514700,
-    advancePayments: 20142000,
-    outstandingBalances: 16514700,
+    totalConfirmedRevenue: 0,
+    totalExpenses: 0,
+    estimatedProfit: 0,
+    pendingPayments: 0,
+    advancePayments: 0,
+    outstandingBalances: 0,
     demoPayments: {
-      totalRevenue: 345000,
-      transactionCount: 2
+      totalRevenue: 0,
+      transactionCount: 0
     }
   };
 
   const operational = data?.operationalOverview || {
-    pendingUserApprovals: 2,
-    pendingCustomerRequests: 5,
-    pendingSurveys: 15,
-    pendingQuotations: 10,
-    pendingDispatches: 4,
-    ongoingInstallations: 40,
-    overdueInstallations: 39,
-    openServiceTickets: 33,
-    pendingWarrantyClaims: 2,
-    lowStockEquipment: 5
+    pendingUserApprovals: 0,
+    pendingCustomerRequests: 0,
+    pendingSurveys: 0,
+    pendingQuotations: 0,
+    pendingDispatches: 0,
+    ongoingInstallations: 0,
+    overdueInstallations: 0,
+    openServiceTickets: 0,
+    pendingWarrantyClaims: 0,
+    lowStockEquipment: 0
   };
 
   const employeeAnalysis = data?.employeeAnalysis || {
-    salesPerformance: [
-      { name: 'Ramesh Patel', totalLeads: 65, convertedLeads: 24, conversionRate: 36.9 },
-      { name: 'Sunil Verma', totalLeads: 58, convertedLeads: 19, conversionRate: 32.7 },
-      { name: 'Priya Sharma', totalLeads: 72, convertedLeads: 28, conversionRate: 38.8 }
-    ],
-    technicianPerformance: [
-      { name: 'Vikram Singh', completedJobs: 34, totalJobs: 38, workingHours: 240, rating: 4.9 },
-      { name: 'Amit Kumar', completedJobs: 29, totalJobs: 35, workingHours: 210, rating: 4.8 },
-      { name: 'Rajesh Chauhan', completedJobs: 26, totalJobs: 31, workingHours: 195, rating: 4.7 }
-    ]
+    salesPerformance: [],
+    technicianPerformance: []
   };
 
   // Filter Monthly Financial Data by Period
@@ -196,38 +191,19 @@ const AdminDashboard = () => {
   else if (periodFilter === 'q4') monthlyFinancials = monthlyFinancials.slice(9, 12);
 
   // Chart 2: Lead Conversion
-  const chart2LeadConversion = data?.charts?.leadConversion || [
-    { label: 'NEW', count: 42, fill: '#38bdf8' },
-    { label: 'CONTACTED', count: 55, fill: '#818cf8' },
-    { label: 'SURVEY', count: 38, fill: '#a78bfa' },
-    { label: 'QUOTED', count: 32, fill: '#f472b6' },
-    { label: 'CONVERTED', count: 85, fill: '#34d399' }
-  ];
+  const chart2LeadConversion = data?.charts?.leadConversion || [];
 
   // Chart 3: Installation Performance
-  const chart3InstallationPerformance = data?.charts?.installationPerformance || monthlyFinancials.map(m => ({
-    month: m.month,
-    completed: Math.floor(Math.random() * 12) + 5,
-    inProgress: Math.floor(Math.random() * 6) + 2
-  }));
+  const chart3InstallationPerformance = data?.charts?.installationPerformance || [];
 
   // Chart 4: Technician Performance
   const chart4TechnicianPerformance = (data?.charts?.technicianPerformance || employeeAnalysis.technicianPerformance || []).slice(0, 10);
 
   // Chart 5: Project Capacity (kW)
-  const chart5ProjectCapacity = data?.charts?.projectCapacity || monthlyFinancials.map(m => ({
-    month: m.month,
-    capacityKw: Math.floor(Math.random() * 120) + 40
-  }));
+  const chart5ProjectCapacity = data?.charts?.projectCapacity || [];
 
   // Chart 6: Service Ticket Status
-  const chart6ServiceTicketStatus = data?.charts?.serviceTicketStatus || [
-    { label: 'OPEN', count: 12, fill: '#f59e0b' },
-    { label: 'ASSIGNED', count: 8, fill: '#38bdf8' },
-    { label: 'IN PROGRESS', count: 7, fill: '#818cf8' },
-    { label: 'PARTS AWAITED', count: 6, fill: '#e879f9' },
-    { label: 'RESOLVED', count: 48, fill: '#34d399' }
-  ];
+  const chart6ServiceTicketStatus = data?.charts?.serviceTicketStatus || [];
 
   const formatCurrencyLakh = (val) => {
     const num = Number(val) || 0;

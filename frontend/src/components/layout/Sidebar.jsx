@@ -94,7 +94,8 @@ const Sidebar = ({ isOpen, closeSidebar, isCollapsed, toggleCollapse }) => {
 
       {/* 2. Sidebar Container (Fixed desktop + Mobile slide-over) */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 lg:z-30 flex flex-col justify-between transition-all duration-300 ease-in-out border-r
+        id="sidebar"
+        className={`no-print fixed inset-y-0 left-0 z-40 lg:z-30 flex flex-col justify-between transition-all duration-300 ease-in-out border-r
           bg-white dark:bg-midnight-900 border-slate-200 dark:border-slate-800/80 shadow-sm
           ${isCollapsed ? 'lg:w-20' : 'lg:w-64'}
           ${isOpen ? 'translate-x-0 w-64 shadow-2xl' : '-translate-x-full lg:translate-x-0'}

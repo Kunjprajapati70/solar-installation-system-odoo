@@ -1,6 +1,7 @@
 const Subsidy = require('../../models/Subsidy');
 const Order = require('../../models/Order');
 const ApiResponse = require('../utils/apiResponse');
+const { resolveOwnedCustomer } = require('../utils/customerScope');
 
 class SubsidyController {
   /**
@@ -10,6 +11,12 @@ class SubsidyController {
     try {
       const { status, search } = req.query;
       const query = {};
+
+      if (req.user?.role === 'customer') {
+        const owned = await resolveOwnedCustomer(req.user);
+        if (!owned) return ApiResponse.success(res, []);
+        query.customer = owned._id;
+      }
 
       if (status) query.status = status;
       if (search) {
@@ -41,6 +48,13 @@ class SubsidyController {
 
       if (!subsidy) {
         return ApiResponse.notFound(res, 'Subsidy application record not found.');
+      }
+      if (req.user?.role === 'customer') {
+        const owned = await resolveOwnedCustomer(req.user);
+        const custId = subsidy.customer?._id?.toString() || subsidy.customer?.toString();
+        if (!owned || custId !== owned._id.toString()) {
+          return ApiResponse.forbidden(res, 'Access denied: You cannot view another customer’s subsidy file.');
+        }
       }
       return ApiResponse.success(res, subsidy);
     } catch (err) {

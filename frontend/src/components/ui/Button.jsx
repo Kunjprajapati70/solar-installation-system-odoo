@@ -6,6 +6,7 @@ export const Button = ({
   variant = 'primary',
   size = 'md',
   isLoading = false,
+  loading = false,
   disabled = false,
   leftIcon,
   rightIcon,
@@ -39,7 +40,7 @@ export const Button = ({
   };
 
   const handleClick = async (e) => {
-    if (disabled || isLoading || internalLoading) return;
+    if (disabled || isLoading || loading || internalLoading) return;
 
     if (confirmMessage) {
       const ok = window.confirm(confirmMessage);
@@ -59,7 +60,7 @@ export const Button = ({
     }
   };
 
-  const isBusy = isLoading || internalLoading || variant === 'loading';
+  const isBusy = isLoading || loading || internalLoading || variant === 'loading';
 
   return (
     <button
@@ -81,7 +82,7 @@ export const Button = ({
       ) : (
         leftIcon && <span className="shrink-0 flex items-center">{leftIcon}</span>
       )}
-      {children && <span className="truncate">{children}</span>}
+      {children && <span className="whitespace-nowrap">{children}</span>}
       {!isBusy && rightIcon && <span className="shrink-0 flex items-center">{rightIcon}</span>}
     </button>
   );

@@ -36,11 +36,8 @@ class OrderController {
         return ApiResponse.badRequest(res, `Order #${existing.orderNumber} already exists for this quotation.`);
       }
 
-      // Automatically approve quotation if not already
       if (quotation.status !== 'approved') {
-        quotation.status = 'approved';
-        quotation.approvedAt = new Date();
-        await quotation.save();
+        return ApiResponse.badRequest(res, `Order can only be created from an approved quotation. Current status: '${quotation.status}'.`);
       }
 
       let customerId = quotation.customer?._id || quotation.customer;

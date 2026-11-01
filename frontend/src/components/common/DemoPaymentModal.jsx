@@ -7,7 +7,8 @@ export const DemoPaymentModal = ({
   isOpen,
   onClose,
   order,
-  onSuccess
+  onSuccess,
+  onPaymentSuccess
 }) => {
   const [method, setMethod] = useState('demo_upi');
   const [scenario, setScenario] = useState('success');
@@ -61,8 +62,9 @@ export const DemoPaymentModal = ({
       });
 
       setResult(res.data || res);
-      if (onSuccess) {
-        onSuccess(res.data || res);
+      const successCb = onSuccess || onPaymentSuccess;
+      if (successCb) {
+        successCb(res.data || res);
       }
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Demo transaction simulation failed.');

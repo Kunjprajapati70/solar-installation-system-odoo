@@ -444,8 +444,20 @@ const OrdersView = () => {
             </p>
 
             <form onSubmit={handleDispatch} className="space-y-3 text-xs">
+              <EquipmentSerialSelect
+                operation="dispatch"
+                orderId={selectedOrder?._id}
+                value=""
+                onChange={(serial) => {
+                  if (serial && !dispatchSerials.includes(serial)) {
+                    setDispatchSerials((prev) => (prev ? `${prev}, ${serial}` : serial));
+                  }
+                }}
+                label="Add in-stock serial from searchable dropdown"
+                placeholder="Search available equipment serials..."
+              />
               <div>
-                <label className="block text-slate-400 mb-1">Serial Numbers (Comma-separated)</label>
+                <label className="block text-slate-400 mb-1">Selected Serial Numbers (Comma-separated)</label>
                 <textarea
                   rows="3"
                   value={dispatchSerials}

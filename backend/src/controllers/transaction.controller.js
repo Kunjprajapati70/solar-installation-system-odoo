@@ -131,7 +131,7 @@ class TransactionController {
       const [items, total] = await Promise.all([
         Payment.find(query)
           .populate('customer', 'name customerCode email phone')
-          .populate('order', 'orderNumber totalAmount balanceAmount paymentStatus')
+          .populate('order', 'orderNumber totalAmount advancePaid balanceAmount paymentStatus systemCapacityKw systemType')
           .sort({ paidAt: -1 })
           .skip(skip)
           .limit(Number(limit)),

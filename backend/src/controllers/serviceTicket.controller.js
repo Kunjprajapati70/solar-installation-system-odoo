@@ -59,11 +59,13 @@ class ServiceTicketController {
         ];
       }
 
-      // If logged in as customer, only show customer's tickets
       if (req.user.role === 'customer') {
         let cust = await Customer.findOne({ user: req.user._id });
         if (!cust) cust = await Customer.findOne({ email: req.user.email });
         if (cust) query.customer = cust._id;
+        else query.customer = null;
+      } else if (req.user.role === 'technician') {
+        query.assignedTechnician = req.user._id;
       }
 
       const skip = (Number(page) - 1) * Number(limit);
@@ -105,9 +107,16 @@ class ServiceTicketController {
 
       // Ownership check for customers
       if (req.user.role === 'customer') {
-        const cust = await Customer.findOne({ user: req.user._id });
-        if (!cust || ticket.customer._id.toString() !== cust._id.toString()) {
+        let cust = await Customer.findOne({ user: req.user._id });
+        if (!cust) cust = await Customer.findOne({ email: req.user.email });
+        const ticketCust = ticket.customer?._id?.toString() || ticket.customer?.toString();
+        if (!cust || ticketCust !== cust._id.toString()) {
           return ApiResponse.forbidden(res, 'Access denied: You do not own this service ticket.');
+        }
+      } else if (req.user.role === 'technician') {
+        const assigned = ticket.assignedTechnician?._id?.toString() || ticket.assignedTechnician?.toString();
+        if (assigned && assigned !== req.user._id.toString()) {
+          return ApiResponse.forbidden(res, 'Access denied: You are not assigned to this service ticket.');
         }
       }
 

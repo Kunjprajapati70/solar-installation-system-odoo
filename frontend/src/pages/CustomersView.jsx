@@ -10,6 +10,9 @@ import {
   Zap,
   Building2,
   Eye,
+  EyeOff,
+  Copy,
+  Check,
   Plus,
   ShieldCheck,
   Edit2,
@@ -44,15 +47,20 @@ const CustomersView = () => {
   // Customer Form Modal State (Add / Edit)
   const [showFormModal, setShowFormModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [createdCredentials, setCreatedCredentials] = useState(null);
+  const [copiedCreds, setCopiedCreds] = useState(false);
   const [customerForm, setCustomerForm] = useState({
     name: '',
     email: '',
     phone: '',
-      connectionType: 'on_grid',
-      sanctionedLoadKw: 3,
-      consumerNumber: '',
-      discomName: 'Gujarat Urja Vikas Nigam (UGVCL)',
-      currentPhase: 'single',
+    userId: '',
+    password: '',
+    connectionType: 'on_grid',
+    sanctionedLoadKw: 3,
+    consumerNumber: '',
+    discomName: 'Gujarat Urja Vikas Nigam (UGVCL)',
+    currentPhase: 'single',
     installationAddress: {
       street: '',
       city: 'Ahmedabad',
@@ -99,9 +107,12 @@ const CustomersView = () => {
 
   const handleOpenAddModal = () => {
     setIsEditing(false);
+    setShowPassword(false);
     setCustomerForm({
       name: '',
       email: '',
+      userId: `CUST-${Math.floor(1000 + Math.random() * 9000)}`,
+      password: `Solar@${Math.floor(1000 + Math.random() * 9000)}!`,
       phone: '',
       connectionType: 'on_grid',
       sanctionedLoadKw: 3,
@@ -116,6 +127,14 @@ const CustomersView = () => {
       }
     });
     setShowFormModal(true);
+  };
+
+  const handleCopyCustomerCredentials = () => {
+    if (!createdCredentials) return;
+    const credText = `SunPower Solutions Customer Portal Credentials:\nCustomer: ${createdCredentials.name}\nCustomer Code: ${createdCredentials.customerCode}\nUser ID: ${createdCredentials.userId}\nEmail: ${createdCredentials.email}\nInitial Password: ${createdCredentials.password}\nPortal: Change temporary password on first login.`;
+    navigator.clipboard.writeText(credText);
+    setCopiedCreds(true);
+    setTimeout(() => setCopiedCreds(false), 2500);
   };
 
   const handleOpenEditModal = (cust, e) => {
@@ -154,13 +173,25 @@ const CustomersView = () => {
       } else {
         const res = await api.post('/customers', customerForm);
         if (res.success) {
-          alert('New customer registered successfully!');
           setShowFormModal(false);
           fetchCustomers();
+          if (res.data?.status === 'pending_approval') {
+            alert(`Customer request ${res.data.requestNumber} submitted for Administrator approval.`);
+          } else if (res.data?.portalLogin) {
+            setCreatedCredentials({
+              name: res.data.name,
+              customerCode: res.data.customerCode,
+              userId: res.data.portalLogin.userId,
+              email: res.data.portalLogin.email,
+              password: res.data.portalLogin.temporaryPassword || customerForm.password
+            });
+          } else {
+            alert('New customer registered successfully!');
+          }
         }
       }
     } catch (err) {
-      alert(`Operation failed: ${err.message}`);
+      alert(`Operation failed: ${err.response?.data?.message || err.message}`);
     }
   };
 
@@ -764,6 +795,78 @@ const CustomersView = () => {
                 </div>
               </div>
 
+              {/* Portal Login Credentials for New Customer */}
+              {!isEditing && (
+                <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-solar-500/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-solar-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      Customer Portal Login Setup
+                    </span>
+                    <span className="text-[10px] text-slate-400">Required for customer self-service login</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-slate-300 font-semibold text-[11px]">Portal User ID *</label>
+                        <button
+                          type="button"
+                          onClick={() => setCustomerForm(prev => ({
+                            ...prev,
+                            userId: `CUST-${Math.floor(1000 + Math.random() * 9000)}`
+                          }))}
+                          className="text-[10px] text-solar-400 hover:text-solar-300 font-semibold"
+                        >
+                          Auto Generate ID
+                        </button>
+                      </div>
+                      <input
+                        type="text"
+                        required
+                        value={customerForm.userId || ''}
+                        onChange={(e) => setCustomerForm({ ...customerForm, userId: e.target.value })}
+                        placeholder="e.g. CUST-8492"
+                        className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-solar-500 font-mono text-xs"
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-slate-300 font-semibold text-[11px]">Initial Password *</label>
+                        <button
+                          type="button"
+                          onClick={() => setCustomerForm(prev => ({
+                            ...prev,
+                            password: `Solar@${Math.floor(1000 + Math.random() * 9000)}!`
+                          }))}
+                          className="text-[10px] text-solar-400 hover:text-solar-300 font-semibold"
+                        >
+                          Auto Generate Password
+                        </button>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          required
+                          value={customerForm.password || ''}
+                          onChange={(e) => setCustomerForm({ ...customerForm, password: e.target.value })}
+                          placeholder="••••••••"
+                          className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-solar-500 font-mono text-xs pr-8"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                        >
+                          {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-end space-x-2 pt-3 border-t border-slate-800">
                 <Button variant="secondary" size="sm" type="button" onClick={() => setShowFormModal(false)}>
                   Cancel
@@ -773,6 +876,75 @@ const CustomersView = () => {
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* 6. Newly Created Customer Credentials Modal */}
+      {createdCredentials && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="glass-card w-full max-w-md rounded-3xl border border-solar-500/40 p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">Customer Portal Credentials</h3>
+                  <p className="text-[11px] text-slate-400">Account provisioned successfully in MongoDB</p>
+                </div>
+              </div>
+              <button onClick={() => setCreatedCredentials(null)} className="text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2.5 text-xs">
+              <div className="flex justify-between items-center py-1 border-b border-slate-800">
+                <span className="text-slate-400">Customer Name:</span>
+                <span className="font-semibold text-white">{createdCredentials.name}</span>
+              </div>
+              <div className="flex justify-between items-center py-1 border-b border-slate-800">
+                <span className="text-slate-400">Customer Code:</span>
+                <span className="font-mono text-solar-400 font-bold">{createdCredentials.customerCode}</span>
+              </div>
+              <div className="flex justify-between items-center py-1 border-b border-slate-800">
+                <span className="text-slate-400">Portal User ID:</span>
+                <span className="font-mono text-emerald-400 font-bold">{createdCredentials.userId}</span>
+              </div>
+              <div className="flex justify-between items-center py-1 border-b border-slate-800">
+                <span className="text-slate-400">Registered Email:</span>
+                <span className="text-slate-200">{createdCredentials.email}</span>
+              </div>
+              <div className="flex justify-between items-center py-1">
+                <span className="text-slate-400">Initial Password:</span>
+                <span className="font-mono text-solar-400 font-bold bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                  {createdCredentials.password}
+                </span>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Share these credentials with the customer so they can sign in to the Customer Portal. They will be prompted to update their password on first login.
+            </p>
+
+            <div className="flex space-x-2 pt-2">
+              <Button
+                variant="primary"
+                onClick={handleCopyCustomerCredentials}
+                className="w-full flex items-center justify-center space-x-1.5 text-xs font-bold"
+              >
+                {copiedCreds ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                <span>{copiedCreds ? 'Copied to Clipboard!' : 'Copy Credentials'}</span>
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => setCreatedCredentials(null)}
+                className="text-xs"
+              >
+                Close
+              </Button>
+            </div>
           </div>
         </div>
       )}

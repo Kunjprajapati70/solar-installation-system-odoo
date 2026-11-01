@@ -21,8 +21,9 @@ class ApprovalController {
       const { status, type, page = 1, limit = 50 } = req.query;
       const query = {};
 
+      const requestType = type || req.query.requestType;
       if (status) query.status = status;
-      if (type) query.requestType = type;
+      if (requestType) query.requestType = requestType;
 
       // If user is not admin, only show their own submitted requests
       if (req.user.role !== 'admin') {
@@ -213,9 +214,17 @@ class ApprovalController {
           await existing.save();
           createdArtifact = existing;
         } else {
-          // Generate temporary initial password
-          const tempPassword = p.initialPassword || `SunPower@${Math.floor(1000 + Math.random() * 9000)}`;
+          const assignedUserId = (req.body.userId || p.userId || '').trim();
+          const tempPassword = req.body.password || p.password;
+          if (!assignedUserId || !tempPassword || String(tempPassword).length < 6) {
+            return ApiResponse.badRequest(res, 'Assign a User ID and password (min 6 characters) before approving this account.');
+          }
+          const idTaken = await User.findOne({ userId: new RegExp(`^${assignedUserId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') });
+          if (idTaken) {
+            return ApiResponse.badRequest(res, 'This User ID is already taken. Choose a different login ID.');
+          }
           const newUser = new User({
+            userId: assignedUserId,
             name: p.name,
             email: p.email?.toLowerCase().trim(),
             password: tempPassword,
@@ -258,9 +267,39 @@ class ApprovalController {
         });
 
         if (!customer) {
+          const assignedUserId = (req.body.userId || p.userId || '').trim();
+          const portalPassword = req.body.password || p.password;
+          let portalUser = null;
+          if (assignedUserId && portalPassword && String(portalPassword).length >= 6) {
+            const idTaken = await User.findOne({
+              $or: [
+                { userId: new RegExp(`^${assignedUserId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') },
+                { email: p.email?.toLowerCase().trim() }
+              ]
+            });
+            if (idTaken) {
+              return ApiResponse.badRequest(res, 'Portal User ID or email is already in use.');
+            }
+            portalUser = new User({
+              userId: assignedUserId,
+              name: p.name,
+              email: p.email?.toLowerCase().trim(),
+              password: portalPassword,
+              role: 'customer',
+              department: 'Customer Portal',
+              phone: p.phone?.trim(),
+              mustChangePassword: true,
+              status: 'active',
+              isActive: true,
+              createdBy: req.user._id
+            });
+            await portalUser.save();
+          }
+
           const customerCode = `CUST-${Date.now().toString().slice(-5)}-${Math.floor(100 + Math.random() * 900)}`;
           customer = new Customer({
             customerCode,
+            user: portalUser?._id,
             name: p.name,
             email: p.email?.toLowerCase().trim(),
             phone: p.phone?.trim(),
@@ -278,7 +317,12 @@ class ApprovalController {
             notes: p.notes
           });
           await customer.save();
-          createdArtifact = customer;
+          createdArtifact = {
+            ...customer.toObject(),
+            portalLogin: portalUser
+              ? { userId: portalUser.userId, email: portalUser.email, temporaryPassword: portalPassword }
+              : null
+          };
         }
       } else if (request.requestType === 'survey_approval' && request.referenceId) {
         await SiteSurvey.findByIdAndUpdate(request.referenceId, {

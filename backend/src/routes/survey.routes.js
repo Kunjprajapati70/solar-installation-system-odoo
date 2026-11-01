@@ -14,11 +14,11 @@ router.put('/:id', authorize('admin', 'sales', 'technician'), SurveyController.u
 
 // Accept both PUT and POST for approval/rejection workflows
 router.route('/:id/approve')
-  .put(authorize('admin', 'sales'), SurveyController.approveSurvey)
-  .post(authorize('admin', 'sales'), SurveyController.approveSurvey);
+  .put(authorize('admin'), SurveyController.approveSurvey)
+  .post(authorize('admin'), SurveyController.approveSurvey);
 
 router.route('/:id/reject')
-  .put(authorize('admin', 'sales'), SurveyController.rejectSurvey)
-  .post(authorize('admin', 'sales'), SurveyController.rejectSurvey);
+  .put(authorize('admin'), SurveyController.rejectSurvey)
+  .post(authorize('admin'), SurveyController.rejectSurvey);
 
 module.exports = router;

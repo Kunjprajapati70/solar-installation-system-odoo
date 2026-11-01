@@ -1,6 +1,13 @@
 const User = require('../../models/User');
 const ApprovalRequest = require('../../models/ApprovalRequest');
+const Notification = require('../../models/Notification');
 const ApiResponse = require('../utils/apiResponse');
+const {
+  normalizeUserId,
+  validateUserId,
+  validatePassword,
+  assertUniqueLogin
+} = require('../utils/loginCredentials');
 
 class UserController {
   /**
@@ -14,6 +21,11 @@ class UserController {
       if (role) query.role = role;
       if (department) query.department = department;
       if (status) query.status = status;
+      if (req.user.role === 'sales') {
+        query.role = { $ne: 'admin' };
+        if (role && role !== 'admin') query.role = role;
+        else if (role === 'admin') query.role = '__none__';
+      }
       if (search) {
         query.$or = [
           { name: { $regex: search, $options: 'i' } },
@@ -54,6 +66,7 @@ class UserController {
       const {
         name,
         email,
+        userId,
         password,
         role = 'sales',
         department,
@@ -68,10 +81,7 @@ class UserController {
       }
 
       const cleanEmail = email.toLowerCase().trim();
-      const existing = await User.findOne({ email: cleanEmail });
-      if (existing) {
-        return ApiResponse.badRequest(res, 'A user with this email address already exists.');
-      }
+      const assignedUserId = normalizeUserId(userId);
 
       // Check if caller is Sales Employee
       if (req.user.role === 'sales') {
@@ -87,12 +97,13 @@ class UserController {
           payload: {
             name,
             email: cleanEmail,
+            userId: assignedUserId || undefined,
+            password: password || undefined,
             role,
             department: department || (role === 'technician' ? 'Field Engineering' : 'Sales & Marketing'),
             phone,
             address,
-            technicianDetails,
-            initialPassword: password || `SunPower@${Math.floor(1000 + Math.random() * 9000)}`
+            technicianDetails
           },
           requestedBy: req.user._id,
           requestedByName: req.user.name,
@@ -102,6 +113,14 @@ class UserController {
 
         await approvalReq.save();
 
+        await Notification.create({
+          targetRole: 'admin',
+          title: `Pending user request ${approvalReq.requestNumber}`,
+          message: `${req.user.name} requested a ${role} account for ${name} (${cleanEmail}).`,
+          type: 'approval_request',
+          link: '/approvals'
+        });
+
         return ApiResponse.created(res, {
           requestId: approvalReq._id,
           requestNumber: approvalReq.requestNumber,
@@ -109,13 +128,21 @@ class UserController {
         }, 'User request submitted. Awaiting Administrator approval.');
       }
 
-      // Admin directly creates user
-      const initialPassword = password || `SunPower@${Math.floor(1000 + Math.random() * 9000)}`;
-      const prefix = role.substring(0, 3).toUpperCase();
-      const userId = `USR-${prefix}-${Date.now().toString().slice(-4)}-${Math.floor(100 + Math.random() * 900)}`;
+      const userIdError = validateUserId(assignedUserId);
+      const passwordError = validatePassword(password);
+      if (userIdError) return ApiResponse.badRequest(res, userIdError);
+      if (passwordError) return ApiResponse.badRequest(res, passwordError);
+
+      try {
+        await assertUniqueLogin({ userId: assignedUserId, email: cleanEmail });
+      } catch (dupErr) {
+        return ApiResponse.badRequest(res, dupErr.message);
+      }
+
+      const initialPassword = password;
 
       const user = new User({
-        userId,
+        userId: assignedUserId,
         name,
         email: cleanEmail,
         password: initialPassword,
@@ -138,6 +165,14 @@ class UserController {
 
       await user.save();
 
+      await Notification.create({
+        recipient: user._id,
+        title: 'Temporary login issued',
+        message: `Account ${user.userId} is active. Sign in with your User ID or email, then replace the temporary password on first login. Credentials are shown once to the administrator and are not emailed in plaintext.`,
+        type: 'credentials',
+        link: '/profile'
+      });
+
       return ApiResponse.created(res, {
         _id: user._id,
         userId: user.userId,
@@ -146,9 +181,11 @@ class UserController {
         role: user.role,
         department: user.department,
         phone: user.phone,
-        initialPassword, // Delivered securely on creation so Admin can provide to employee
+        initialPassword,
+        temporaryPassword: initialPassword,
         mustChangePassword: user.mustChangePassword,
-        status: user.status
+        status: user.status,
+        deliveryMethod: 'admin_secure_handoff'
       }, `User account ${user.userId} created successfully.`);
     } catch (err) {
       next(err);

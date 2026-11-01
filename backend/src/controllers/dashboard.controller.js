@@ -213,6 +213,14 @@ class DashboardController {
   static async getComprehensiveAnalytics(req, res, next) {
     try {
       const data = await AnalyticsService.getComprehensiveAnalytics(req.query);
+      if (req.user?.role === 'sales') {
+        data.financialOverview = {
+          pendingPayments: data.financialOverview?.pendingPayments || 0,
+          demoPayments: data.financialOverview?.demoPayments || { totalRevenue: 0, transactionCount: 0 },
+          restricted: true,
+          note: 'Company-wide confirmed revenue and profit are restricted to Administrators.'
+        };
+      }
       return ApiResponse.success(res, data, 'Comprehensive analytics data retrieved');
     } catch (err) {
       next(err);

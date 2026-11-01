@@ -11,7 +11,17 @@ const Installation = require('../../models/Installation');
 const Warranty = require('../../models/Warranty');
 const Payment = require('../../models/Payment');
 const ServiceTicket = require('../../models/ServiceTicket');
+const ApprovalRequest = require('../../models/ApprovalRequest');
+const Notification = require('../../models/Notification');
 const ApiResponse = require('../utils/apiResponse');
+const { resolveOwnedCustomer } = require('../utils/customerScope');
+const User = require('../../models/User');
+const {
+  normalizeUserId,
+  validateUserId,
+  validatePassword,
+  assertUniqueLogin
+} = require('../utils/loginCredentials');
 
 class CustomerController {
   /**
@@ -19,11 +29,91 @@ class CustomerController {
    */
   static async createCustomer(req, res, next) {
     try {
-      const { name, email, phone, installationAddress, connectionType, sanctionedLoadKw, discomName, consumerNumber, currentPhase, notes } = req.body;
+      const { name, email, phone, installationAddress, connectionType, sanctionedLoadKw, discomName, consumerNumber, currentPhase, notes, userId, password } = req.body;
 
       if (!name || !email || !phone) {
         return ApiResponse.badRequest(res, 'Name, email, and phone number are required.');
       }
+
+      if (req.user.role === 'sales') {
+        const existing = await Customer.findOne({
+          $or: [{ email: email.toLowerCase().trim() }, { phone: phone.trim() }]
+        });
+        if (existing) {
+          return ApiResponse.badRequest(res, 'A customer with this email or phone already exists.');
+        }
+
+        const approvalReq = new ApprovalRequest({
+          requestType: 'customer_creation',
+          title: `New Customer Request: ${name}`,
+          description: `Sales Representative ${req.user.name} submitted a customer onboarding request.`,
+          payload: {
+            name,
+            email: email.toLowerCase().trim(),
+            phone: phone.trim(),
+            userId: userId ? normalizeUserId(userId) : undefined,
+            password: password || undefined,
+            installationAddress,
+            connectionType,
+            sanctionedLoadKw,
+            discomName,
+            consumerNumber,
+            currentPhase,
+            notes
+          },
+          requestedBy: req.user._id,
+          requestedByName: req.user.name,
+          requestedByRole: req.user.role,
+          status: 'pending',
+          auditTrail: [{
+            action: 'CREATED',
+            fromStatus: 'none',
+            toStatus: 'pending',
+            performedBy: req.user._id,
+            performedByName: req.user.name,
+            notes: 'Customer request submitted for Admin approval'
+          }]
+        });
+        await approvalReq.save();
+        await Notification.create({
+          targetRole: 'admin',
+          title: `Pending customer request ${approvalReq.requestNumber}`,
+          message: `${req.user.name} requested a customer account for ${name}.`,
+          type: 'approval_request',
+          link: '/approvals'
+        });
+        return ApiResponse.created(res, {
+          requestId: approvalReq._id,
+          requestNumber: approvalReq.requestNumber,
+          status: 'pending_approval'
+        }, 'Customer request submitted. Awaiting Administrator approval.');
+      }
+
+      const portalUserId = normalizeUserId(userId);
+      const userIdError = validateUserId(portalUserId);
+      const passwordError = validatePassword(password);
+      if (userIdError) return ApiResponse.badRequest(res, `Portal login: ${userIdError}`);
+      if (passwordError) return ApiResponse.badRequest(res, `Portal login: ${passwordError}`);
+      try {
+        await assertUniqueLogin({ userId: portalUserId, email: email.toLowerCase().trim() });
+      } catch (dupErr) {
+        return ApiResponse.badRequest(res, dupErr.message);
+      }
+
+      const portalUser = new User({
+        userId: portalUserId,
+        name,
+        email: email.toLowerCase().trim(),
+        password,
+        role: 'customer',
+        department: 'Customer Portal',
+        phone: phone.trim(),
+        mustChangePassword: true,
+        status: 'active',
+        isActive: true,
+        createdBy: req.user._id
+      });
+      await portalUser.save();
 
       // Generate unique customer code
       const customerCode = `CUST-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`;
@@ -38,7 +128,7 @@ class CustomerController {
 
       const customer = new Customer({
         customerCode,
-        user: req.user.role === 'customer' ? req.user._id : req.body.user,
+        user: portalUser._id,
         name,
         email: email.toLowerCase().trim(),
         phone: phone.trim(),
@@ -57,7 +147,15 @@ class CustomerController {
       });
 
       await customer.save();
-      return ApiResponse.created(res, customer, 'Customer record created successfully.');
+      return ApiResponse.created(res, {
+        ...customer.toObject(),
+        portalLogin: {
+          userId: portalUser.userId,
+          email: portalUser.email,
+          temporaryPassword: password,
+          mustChangePassword: true
+        }
+      }, 'Customer record and portal login created successfully.');
     } catch (err) {
       next(err);
     }
@@ -82,9 +180,12 @@ class CustomerController {
         ];
       }
 
-      // If customer role, only return their own customer record
       if (req.user.role === 'customer') {
-        query.user = req.user._id;
+        const owned = await resolveOwnedCustomer(req.user);
+        if (!owned) {
+          return ApiResponse.success(res, [], 'Customers retrieved', 200, { total: 0, page: 1, limit: Number(limit), pages: 0 });
+        }
+        query._id = owned._id;
       }
 
       const skip = (Number(page) - 1) * Number(limit);
@@ -117,9 +218,11 @@ class CustomerController {
         return ApiResponse.notFound(res, 'Customer not found.');
       }
 
-      // Customer ownership validation
-      if (req.user.role === 'customer' && customer.user?.toString() !== req.user._id.toString()) {
-        return ApiResponse.forbidden(res, 'Access denied: You do not own this customer profile.');
+      if (req.user.role === 'customer') {
+        const owned = await resolveOwnedCustomer(req.user);
+        if (!owned || owned._id.toString() !== customer._id.toString()) {
+          return ApiResponse.forbidden(res, 'Access denied: You do not own this customer profile.');
+        }
       }
 
       return ApiResponse.success(res, customer);
@@ -138,8 +241,11 @@ class CustomerController {
         return ApiResponse.notFound(res, 'Customer not found.');
       }
 
-      if (req.user.role === 'customer' && customer.user?.toString() !== req.user._id.toString()) {
-        return ApiResponse.forbidden(res, 'Access denied: You cannot edit another customer profile.');
+      if (req.user.role === 'customer') {
+        const owned = await resolveOwnedCustomer(req.user);
+        if (!owned || owned._id.toString() !== customer._id.toString()) {
+          return ApiResponse.forbidden(res, 'Access denied: You cannot edit another customer profile.');
+        }
       }
 
       const { name, phone, installationAddress, connectionType, sanctionedLoadKw, discomName, consumerNumber, currentPhase, notes } = req.body;
@@ -192,10 +298,13 @@ class CustomerController {
       const [surveys, quotations, orders, installations, warranties, payments, tickets] = await Promise.all([
         SiteSurvey.find({ customer: customerId }).sort({ createdAt: -1 }),
         Quotation.find({ customer: customerId }).sort({ createdAt: -1 }),
-        Order.find({ customer: customerId }).populate('installation').sort({ createdAt: -1 }),
+        Order.find({ customer: customerId }).populate('installation').populate('quotation').sort({ createdAt: -1 }),
         Installation.find({ customer: customerId }).sort({ scheduledDate: -1 }),
         Warranty.find({ customer: customerId }).sort({ expiryDate: -1 }),
-        Payment.find({ customer: customerId }).sort({ paidAt: -1 }),
+        Payment.find({ customer: customerId })
+          .populate('customer', 'name customerCode email phone installationAddress')
+          .populate('order', 'orderNumber totalAmount advancePaid balanceAmount paymentStatus systemCapacityKw systemType')
+          .sort({ paidAt: -1 }),
         ServiceTicket.find({ customer: customerId }).sort({ createdAt: -1 })
       ]);
 

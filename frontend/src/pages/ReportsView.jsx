@@ -29,17 +29,18 @@ const ReportsView = () => {
     const fetchAnalytics = async () => {
       try {
         setLoading(true);
+        const asList = (payload) => (Array.isArray(payload) ? payload : []);
         const [dashRes, instRes, invRes, tickRes] = await Promise.allSettled([
           api.get('/analytics/dashboard'),
-          api.get('/installations'),
-          api.get('/inventory'),
-          api.get('/service-tickets')
+          api.get('/installations', { params: { limit: 1000 } }),
+          api.get('/inventory', { params: { limit: 1000 } }),
+          api.get('/service-tickets', { params: { limit: 1000 } })
         ]);
 
         if (dashRes.status === 'fulfilled' && dashRes.value.success) setData(dashRes.value.data);
-        if (instRes.status === 'fulfilled' && instRes.value.success) setInstallationsList(instRes.value.data);
-        if (invRes.status === 'fulfilled' && invRes.value.success) setInventoryList(invRes.value.data);
-        if (tickRes.status === 'fulfilled' && tickRes.value.success) setTicketsList(tickRes.value.data);
+        if (instRes.status === 'fulfilled' && instRes.value.success) setInstallationsList(asList(instRes.value.data));
+        if (invRes.status === 'fulfilled' && invRes.value.success) setInventoryList(asList(invRes.value.data));
+        if (tickRes.status === 'fulfilled' && tickRes.value.success) setTicketsList(asList(tickRes.value.data));
       } catch (err) {
         console.error('Fetch reports data error:', err);
       } finally {
@@ -89,10 +90,34 @@ const ReportsView = () => {
     document.body.removeChild(link);
   };
 
+  const handlePrint = () => {
+    document.body.classList.add('printing-active');
+    const done = () => {
+      document.body.classList.remove('printing-active');
+      window.removeEventListener('afterprint', done);
+    };
+    window.addEventListener('afterprint', done);
+    window.print();
+    setTimeout(done, 1500);
+  };
+
+  const reportTitles = {
+    financial: 'Monthly Financials & Profit',
+    installations: 'Installation Capacity Register',
+    technician: 'Technician Hours & SLAs',
+    inventory: 'Warehouse Inventory',
+    service: 'Service & Warranty Repairs'
+  };
+
   return (
-    <div className="space-y-6">
+    <div id="printable-document" className="printable-document-container print-report-root space-y-6">
+      <div className="print-only mb-4 pb-3 border-b-2 border-slate-900">
+        <h1 className="text-xl font-black text-slate-900">SunPower Solutions Pvt. Ltd.</h1>
+        <p className="text-sm font-semibold text-slate-700">{reportTitles[reportType]} — Printed {new Date().toLocaleDateString('en-IN')}</p>
+      </div>
+
       {/* Header */}
-      <div className="p-5 rounded-3xl glass-card border border-solar-500/20 bg-gradient-to-r from-midnight-900 via-midnight-850 to-midnight-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="no-print p-5 rounded-3xl glass-card border border-solar-500/20 bg-gradient-to-r from-midnight-900 via-midnight-850 to-midnight-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2 text-solar-400 text-xs font-semibold uppercase tracking-wider mb-1">
             <BarChart3 className="w-3.5 h-3.5" />
@@ -110,15 +135,15 @@ const ReportsView = () => {
           <Button
             variant="primary"
             onClick={handleExportCSV}
-            className="text-xs flex items-center space-x-1.5"
+            className="no-print text-xs flex items-center space-x-1.5"
           >
             <Download className="w-4 h-4" />
             <span>Export CSV Report</span>
           </Button>
           <Button
             variant="secondary"
-            onClick={() => window.print()}
-            className="text-xs flex items-center space-x-1.5"
+            onClick={handlePrint}
+            className="no-print text-xs flex items-center space-x-1.5"
           >
             <Printer className="w-4 h-4" />
             <span>Print View</span>
@@ -127,7 +152,7 @@ const ReportsView = () => {
       </div>
 
       {/* Report Selector Tabs */}
-      <div className="flex border-b border-slate-800 space-x-4 overflow-x-auto text-xs font-semibold pb-1">
+      <div className="no-print flex border-b border-slate-800 space-x-4 overflow-x-auto text-xs font-semibold pb-1">
         <button
           onClick={() => setReportType('financial')}
           className={`py-2 px-3 border-b-2 transition whitespace-nowrap flex items-center space-x-1.5 ${
@@ -221,7 +246,7 @@ const ReportsView = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 font-mono">
-                {installationsList.slice(0, 15).map((inst) => (
+                {installationsList.map((inst) => (
                   <tr key={inst._id} className="hover:bg-slate-800/30 transition">
                     <td className="py-2.5 px-3 font-bold text-solar-400">{inst.installationNumber}</td>
                     <td className="py-2.5 px-3 font-sans text-white">{inst.customer?.name}</td>

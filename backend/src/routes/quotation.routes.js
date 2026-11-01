@@ -15,14 +15,14 @@ router.put('/:id', authorize('admin', 'sales'), QuotationController.updateQuotat
 
 // Support both PUT and POST for approve/reject actions
 router.route('/:id/approve')
-  .put(authorize('admin', 'sales'), QuotationController.approveQuotation)
-  .post(authorize('admin', 'sales'), QuotationController.approveQuotation);
+  .put(authorize('admin'), QuotationController.approveQuotation)
+  .post(authorize('admin'), QuotationController.approveQuotation);
 
 router.route('/:id/reject')
-  .put(authorize('admin', 'sales'), QuotationController.rejectQuotation)
-  .post(authorize('admin', 'sales'), QuotationController.rejectQuotation);
+  .put(authorize('admin'), QuotationController.rejectQuotation)
+  .post(authorize('admin'), QuotationController.rejectQuotation);
 
-router.put('/:id/request-corrections', authorize('admin', 'sales'), QuotationController.requestCorrections);
+router.put('/:id/request-corrections', authorize('admin'), QuotationController.requestCorrections);
 router.put('/:id/status', authorize('admin', 'sales'), QuotationController.updateStatus);
 
 module.exports = router;

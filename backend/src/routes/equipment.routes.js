@@ -4,13 +4,10 @@ const EquipmentController = require('../controllers/equipment.controller');
 const { protect } = require('../middleware/auth.middleware');
 const { authorize } = require('../middleware/role.middleware');
 
-// Public lookup for QR scanner verification (or protected with standard auth)
-router.get('/serial/:serialNumber', EquipmentController.getBySerialNumber);
-router.get('/lookup/:serialNumber', EquipmentController.getBySerialNumber);
-
-// All state-changing routes require authentication
 router.use(protect);
 
+router.get('/serial/:serialNumber', EquipmentController.getBySerialNumber);
+router.get('/lookup/:serialNumber', EquipmentController.getBySerialNumber);
 router.get('/', EquipmentController.listEquipment);
 router.get('/dropdown', EquipmentController.getDropdownOptions);
 router.post('/generate', authorize('admin', 'inventory_manager', 'sales'), EquipmentController.generateBatch);

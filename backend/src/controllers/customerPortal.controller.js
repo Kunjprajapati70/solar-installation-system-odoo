@@ -198,6 +198,36 @@ class CustomerPortalController {
   }
 
   /**
+   * GET /api/customer-portal/documents
+   * Own quotations, receipts, warranties, surveys, and installations only
+   */
+  static async getDocuments(req, res, next) {
+    try {
+      const customer = await CustomerPortalController.getAuthenticatedCustomer(req.user._id);
+      if (!customer) return ApiResponse.success(res, []);
+
+      const SiteSurvey = require('../../models/SiteSurvey');
+      const [quotations, payments, warranties, installations, surveys] = await Promise.all([
+        Quotation.find({ customer: customer._id }).select('quotationNumber status createdAt systemCapacityKw pricing').sort({ createdAt: -1 }),
+        Payment.find({ customer: customer._id }).select('receiptNumber amount status isDemo paidAt paymentMethod').sort({ paidAt: -1 }),
+        Warranty.find({ customer: customer._id }).select('certificateNumber serialNumber status expiryDate').sort({ createdAt: -1 }),
+        Installation.find({ customer: customer._id }).select('installationNumber status scheduledDate systemCapacityKw').sort({ scheduledDate: -1 }),
+        SiteSurvey.find({ customer: customer._id }).select('surveyNumber status scheduledDate').sort({ scheduledDate: -1 })
+      ]);
+
+      return ApiResponse.success(res, {
+        quotations,
+        receipts: payments,
+        warranties,
+        installations,
+        surveys
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
    * GET /api/customer-portal/notifications
    */
   static async getNotifications(req, res, next) {

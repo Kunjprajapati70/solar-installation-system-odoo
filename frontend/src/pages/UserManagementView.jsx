@@ -54,6 +54,8 @@ const UserManagementView = () => {
     action: 'approve', // 'approve' | 'reject'
     reviewNotes: '',
     rejectionReason: '',
+    assignedUserId: '',
+    assignedPassword: '',
     submitting: false
   });
 
@@ -61,20 +63,18 @@ const UserManagementView = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    userId: '',
     phone: '',
     role: 'sales',
     department: 'Sales & Marketing',
     password: '',
-    autoGeneratePassword: true,
     mustChangePassword: true
   });
   const [submittingUser, setSubmittingUser] = useState(false);
 
   useEffect(() => {
     fetchUsers();
-    if (isAdmin) {
-      fetchPendingRequests();
-    }
+    fetchPendingRequests();
   }, [roleFilter, statusFilter]);
 
   const fetchUsers = async () => {
@@ -99,7 +99,7 @@ const UserManagementView = () => {
   const fetchPendingRequests = async () => {
     try {
       const res = await api.get('/approvals', {
-        params: { requestType: 'user_creation', status: 'pending' }
+        params: { type: 'user_creation', status: 'pending' }
       });
       if (res.success) {
         setPendingRequests(res.data || []);
@@ -115,15 +115,19 @@ const UserManagementView = () => {
   };
 
   const handleOpenAddUser = () => {
-    const generatedPass = `SunPower@${Math.floor(1000 + Math.random() * 9000)}`;
+    const defaultRole = isSales ? 'technician' : 'sales';
+    const prefix = defaultRole === 'technician' ? 'TEC' : defaultRole === 'customer' ? 'CUST' : defaultRole === 'admin' ? 'ADM' : 'SALES';
+    const randomId = `${prefix}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const randomPass = `Solar@${Math.floor(1000 + Math.random() * 9000)}!`;
+
     setFormData({
       name: '',
       email: '',
+      userId: isAdmin ? randomId : '',
       phone: '',
-      role: isSales ? 'technician' : 'sales',
+      role: defaultRole,
       department: isSales ? 'Field Engineering' : 'Sales & Marketing',
-      password: generatedPass,
-      autoGeneratePassword: true,
+      password: isAdmin ? randomPass : '',
       mustChangePassword: true
     });
     setIsAddUserModalOpen(true);
@@ -135,12 +139,17 @@ const UserManagementView = () => {
       showToast('Name and email are required', 'warning');
       return;
     }
+    if (isAdmin && (!formData.userId.trim() || !formData.password.trim())) {
+      showToast('Admin must assign a User ID and password for this account', 'warning');
+      return;
+    }
 
     try {
       setSubmittingUser(true);
       const payload = {
         name: formData.name,
         email: formData.email,
+        userId: formData.userId.trim(),
         phone: formData.phone,
         role: formData.role,
         department: formData.department,
@@ -194,7 +203,11 @@ const UserManagementView = () => {
     const { request, reviewNotes } = approvalModalState;
     try {
       setApprovalModalState((prev) => ({ ...prev, submitting: true }));
-      const res = await api.put(`/approvals/${request._id}/approve`, { reviewNotes });
+      const res = await api.put(`/approvals/${request._id}/approve`, {
+        reviewNotes,
+        userId: approvalModalState.assignedUserId,
+        password: approvalModalState.assignedPassword
+      });
       if (res.success) {
         showToast(`Request #${request.requestNumber} approved successfully!`, 'success');
         setApprovalModalState({ isOpen: false, request: null, action: 'approve', reviewNotes: '', rejectionReason: '', submitting: false });
@@ -355,126 +368,138 @@ const UserManagementView = () => {
             </div>
           </div>
 
-          {/* User Table */}
-          <div className="overflow-x-auto rounded-2xl glass-card border border-slate-800">
-            <table className="w-full text-left text-xs sm:text-sm text-slate-300">
-              <thead className="bg-slate-900/80 uppercase text-[11px] font-bold tracking-wider text-slate-400 border-b border-slate-800">
+          <div className="overflow-x-auto rounded-2xl glass-card border border-slate-800 shadow-xl">
+            <table className="w-full text-left text-xs sm:text-sm text-slate-300 min-w-[1100px] border-collapse">
+              <thead className="bg-slate-900/90 uppercase text-[11px] font-bold tracking-wider text-slate-400 border-b border-slate-800">
                 <tr>
-                  <th className="px-4 py-3.5">User ID & Name</th>
-                  <th className="px-4 py-3.5">Contact Details</th>
-                  <th className="px-4 py-3.5">Role & Department</th>
-                  <th className="px-4 py-3.5">Account Status</th>
-                  <th className="px-4 py-3.5">Security / First Login</th>
-                  <th className="px-4 py-3.5 text-right">Actions</th>
+                  <th className="px-5 py-4 w-[230px]">User ID & Name</th>
+                  <th className="px-5 py-4 w-[280px]">Contact Details</th>
+                  <th className="px-5 py-4 w-[190px]">Role & Department</th>
+                  <th className="px-5 py-4 w-[140px]">Account Status</th>
+                  <th className="px-5 py-4 w-[220px]">Security / First Login</th>
+                  <th className="px-5 py-4 w-[190px] text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 font-sans">
                 {loading ? (
                   <tr>
-                    <td colSpan="6" className="px-4 py-8 text-center text-slate-400">
+                    <td colSpan="6" className="px-5 py-12 text-center text-slate-400">
                       <div className="flex items-center justify-center space-x-2">
                         <RefreshCw className="w-4 h-4 animate-spin text-solar-500" />
-                        <span>Loading encrypted user database...</span>
+                        <span>Loading user directory...</span>
                       </div>
                     </td>
                   </tr>
                 ) : users.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-4 py-8 text-center text-slate-400">
+                    <td colSpan="6" className="px-5 py-12 text-center text-slate-400">
                       No users found matching current filters.
                     </td>
                   </tr>
                 ) : (
                   users.map((u) => (
                     <tr key={u._id} className="hover:bg-slate-800/40 transition-colors">
-                      <td className="px-4 py-3.5">
-                        <div className="font-semibold text-white flex items-center space-x-2">
-                          <span>{u.name}</span>
-                        </div>
-                        <div className="text-[11px] font-mono text-solar-400 mt-0.5">
+                      {/* User ID & Name */}
+                      <td className="px-5 py-4 align-middle">
+                        <p className="font-bold text-white text-sm truncate max-w-[210px]">{u.name}</p>
+                        <p className="text-[11px] font-mono text-solar-400 mt-0.5 tracking-wider font-semibold">
                           {u.userId || `USR-${u._id.slice(-6).toUpperCase()}`}
-                        </div>
+                        </p>
                       </td>
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center space-x-1.5 text-slate-300">
-                          <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span>{u.email}</span>
-                        </div>
+
+                      {/* Contact Details */}
+                      <td className="px-5 py-4 align-middle">
+                        <p className="flex items-center gap-2 text-slate-300 text-xs">
+                          <Mail className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                          <span className="truncate max-w-[240px]" title={u.email}>{u.email}</span>
+                        </p>
                         {u.phone && (
-                          <div className="flex items-center space-x-1.5 text-slate-400 text-xs mt-1">
+                          <p className="flex items-center gap-2 text-slate-400 text-xs mt-1">
                             <Phone className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                             <span>{u.phone}</span>
-                          </div>
+                          </p>
                         )}
                       </td>
-                      <td className="px-4 py-3.5">
+
+                      {/* Role & Department */}
+                      <td className="px-5 py-4 align-middle">
                         <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${
+                          className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold capitalize whitespace-nowrap ${
                             u.role === 'admin'
-                              ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                              ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
                               : u.role === 'sales'
-                              ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                              ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
                               : u.role === 'technician'
-                              ? 'bg-sky-500/20 text-sky-400 border border-sky-500/30'
-                              : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                              ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30'
+                              : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                           }`}
                         >
                           {u.role}
                         </span>
-                        <div className="text-[11px] text-slate-400 mt-1 flex items-center space-x-1">
-                          <Building className="w-3 h-3 text-slate-500" />
-                          <span>{u.department || 'Operations'}</span>
-                        </div>
+                        <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5 whitespace-nowrap">
+                          <Building className="w-3 h-3 text-slate-500 shrink-0" />
+                          <span>{u.department || (u.role === 'technician' ? 'Field Engineering' : 'Operations')}</span>
+                        </p>
                       </td>
-                      <td className="px-4 py-3.5">
+
+                      {/* Account Status */}
+                      <td className="px-5 py-4 align-middle whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            u.status === 'active'
-                              ? 'bg-emerald-500/20 text-emerald-400'
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                            u.status === 'active' || (!u.status && u.isActive)
+                              ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                               : u.status === 'pending_approval'
-                              ? 'bg-amber-500/20 text-amber-400'
-                              : 'bg-rose-500/20 text-rose-400'
+                              ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                              : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
                           }`}
                         >
-                          {u.status === 'active' ? (
-                            <CheckCircle2 className="w-3 h-3" />
+                          {u.status === 'active' || (!u.status && u.isActive) ? (
+                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                           ) : (
-                            <AlertCircle className="w-3 h-3" />
+                            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                           )}
                           <span className="capitalize">{u.status || (u.isActive ? 'active' : 'inactive')}</span>
                         </span>
                       </td>
-                      <td className="px-4 py-3.5">
+
+                      {/* Security / First Login */}
+                      <td className="px-5 py-4 align-middle whitespace-nowrap">
                         {u.mustChangePassword ? (
-                          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[11px]">
-                            <Lock className="w-3 h-3" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs font-medium">
+                            <Lock className="w-3.5 h-3.5 shrink-0" />
                             <span>First-Login Change Required</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[11px]">
-                            <Check className="w-3 h-3" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-medium">
+                            <Check className="w-3.5 h-3.5 shrink-0" />
                             <span>Password Verified</span>
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3.5 text-right space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          icon={Eye}
-                          onClick={() => setSelectedUserForDetail(u)}
-                        >
-                          Details
-                        </Button>
-                        {isAdmin && u.role !== 'admin' && (
+
+                      {/* Actions */}
+                      <td className="px-5 py-4 align-middle text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-2 shrink-0">
                           <Button
-                            variant={u.status === 'active' ? 'danger' : 'success'}
+                            variant="outline"
                             size="sm"
-                            onClick={() => handleToggleUserStatus(u)}
+                            leftIcon={<Eye className="w-3.5 h-3.5" />}
+                            onClick={() => setSelectedUserForDetail(u)}
+                            className="whitespace-nowrap shrink-0"
                           >
-                            {u.status === 'active' ? 'Deactivate' : 'Activate'}
+                            Details
                           </Button>
-                        )}
+                          {isAdmin && u.role !== 'admin' && (
+                            <Button
+                              variant={u.status === 'active' ? 'danger' : 'success'}
+                              size="sm"
+                              onClick={() => handleToggleUserStatus(u)}
+                              className="whitespace-nowrap shrink-0"
+                            >
+                              {u.status === 'active' ? 'Deactivate' : 'Activate'}
+                            </Button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -620,6 +645,39 @@ const UserManagementView = () => {
                 />
               </div>
 
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    Login User ID *
+                  </label>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const prefix = formData.role === 'technician' ? 'TEC' : formData.role === 'customer' ? 'CUST' : formData.role === 'admin' ? 'ADM' : 'SALES';
+                        setFormData({ ...formData, userId: `${prefix}-${Math.floor(1000 + Math.random() * 9000)}` });
+                      }}
+                      className="text-[11px] text-solar-400 hover:text-solar-300 font-semibold"
+                    >
+                      Auto Generate ID
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  required={isAdmin}
+                  placeholder="e.g. TEC-7945 or CUST-4821"
+                  value={formData.userId}
+                  onChange={(e) => setFormData({ ...formData, userId: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-solar-500"
+                />
+                <p className="text-[11px] text-slate-500 mt-1">
+                  {isAdmin
+                    ? 'Unique login identifier for the user (can sign in with this ID or email).'
+                    : 'Optional suggestion. The administrator will assign the final User ID and password.'}
+                </p>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
@@ -661,7 +719,21 @@ const UserManagementView = () => {
                       if (newRole === 'sales') newDept = 'Sales & Marketing';
                       if (newRole === 'technician') newDept = 'Field Engineering';
                       if (newRole === 'admin') newDept = 'Executive Administration';
-                      setFormData({ ...formData, role: newRole, department: newDept });
+                      if (newRole === 'customer') newDept = 'Customer Portal';
+
+                      // If currently having a generated ID prefix, adapt it to the new role
+                      let updatedUserId = formData.userId;
+                      if (!updatedUserId || /^(TEC|CUST|SALES|ADM)-[0-9]{4}$/.test(updatedUserId)) {
+                        const prefix = newRole === 'technician' ? 'TEC' : newRole === 'customer' ? 'CUST' : newRole === 'admin' ? 'ADM' : 'SALES';
+                        updatedUserId = `${prefix}-${Math.floor(1000 + Math.random() * 9000)}`;
+                      }
+
+                      setFormData({
+                        ...formData,
+                        role: newRole,
+                        department: newDept,
+                        userId: isAdmin ? updatedUserId : formData.userId
+                      });
                     }}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-solar-500"
                   >
@@ -687,12 +759,28 @@ const UserManagementView = () => {
 
               {/* Password Assignment (Admin direct or auto-generated) */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
-                  Initial Temporary Password
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    Initial Password *
+                  </label>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const generatedPass = `Solar@${Math.floor(1000 + Math.random() * 9000)}!`;
+                        setFormData({ ...formData, password: generatedPass });
+                      }}
+                      className="text-[11px] text-solar-400 hover:text-solar-300 font-semibold"
+                    >
+                      Auto Generate Password
+                    </button>
+                  )}
+                </div>
                 <div className="flex items-center space-x-2">
                   <input
                     type="text"
+                    required={isAdmin}
+                    placeholder="Enter or generate password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-solar-400 font-mono focus:outline-none focus:border-solar-500"
@@ -702,7 +790,7 @@ const UserManagementView = () => {
                     size="sm"
                     type="button"
                     onClick={() => {
-                      const generatedPass = `SunPower@${Math.floor(1000 + Math.random() * 9000)}`;
+                      const generatedPass = `Solar@${Math.floor(1000 + Math.random() * 9000)}!`;
                       setFormData({ ...formData, password: generatedPass });
                     }}
                   >
@@ -711,7 +799,7 @@ const UserManagementView = () => {
                 </div>
                 <p className="text-[11px] text-slate-500 mt-1">
                   {isAdmin
-                    ? 'User must change this temporary password immediately after their first login.'
+                    ? 'Required. User will be required to change this temporary password upon first login.'
                     : 'A temporary password will be securely provisioned upon Admin approval.'}
                 </p>
               </div>
